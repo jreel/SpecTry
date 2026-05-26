@@ -129,10 +129,20 @@
 </head>
 <body>
 
+<div style="margin-bottom: 1.5rem;">
+  <label for="compound-select" style="font-weight: 600; margin-right: 0.5rem;">Compound:</label>
+  <select id="compound-select" style="font-family: 'SF Mono','Menlo','Consolas',monospace; font-size: 0.9rem; padding: 0.3rem 0.5rem; border: 1px solid var(--grid); border-radius: 3px;">
+    <option value="ethyl_acetate">ethyl acetate</option>
+    <option value="1_bromopropane">1-bromopropane</option>
+    <option value="isopropanol">isopropanol</option>
+    <option value="benzaldehyde">benzaldehyde</option>
+  </select>
+</div>
+
 <h2>Demo 1: Full display (study/review mode)</h2>
 <div class="ir-chart" id="ir-chart-full"></div>
 
-<h2>Demo 2: "Identify the functional group" question mode</h2>
+<h2 style="margin-top: 2rem;">Demo 2: "Identify the functional group" question mode</h2>
 <p class="demo-note">showName/Formula/MW: false, showSignalLabels: false</p>
 <div class="ir-chart" id="ir-chart-bare"></div>
 
@@ -143,9 +153,6 @@
 // IR Spectrum Renderer
 // Reads compound JSON and draws a transmittance IR spectrum.
 // ============================================================
-
-// Embedded test data will be loaded from file; for prototype, inline.
-let compoundData = null;
 
 // --------------- renderIR ---------------
 function renderIR(container, compound, options = {}) {
@@ -470,33 +477,38 @@ function interpolateSmoothed(sortedSmoothed, wn) {
 }
 
 // --------------- Load and render ---------------
-// For prototype: load from file input or use embedded data
-async function loadAndRender() {
-  // Try loading ethyl_acetate.json from data directory
+async function loadCompound(id) {
   try {
-    const resp = await fetch('../data/ethyl_acetate.json');
-    if (resp.ok) {
-      compoundData = await resp.json();
+    const resp = await fetch(`../data/${id}.json`);
+    if (!resp.ok) throw new Error(resp.statusText);
+    const data = await resp.json();
+
+    if (!data.IR || !data.IR.curve || data.IR.curve.length === 0) {
+      document.getElementById('ir-chart-full').innerHTML =
+        '<p style="color:var(--error);padding:1rem;">No IR curve data for this compound.</p>';
+      document.getElementById('ir-chart-bare').innerHTML = '';
+      return;
     }
-  } catch(e) { /* fall through */ }
 
-  if (!compoundData) {
-    document.body.innerHTML = '<p style="color:var(--error);padding:2rem;">Could not load compound data. Ensure data/ethyl_acetate.json exists.</p>';
-    return;
+    renderIR('#ir-chart-full', data);
+
+    renderIR('#ir-chart-bare', data, {
+      showName: false,
+      showFormula: false,
+      showMW: false,
+      showSignalLabels: false,
+      showTooltipLabels: false,
+    });
+  } catch(e) {
+    document.getElementById('ir-chart-full').innerHTML =
+      `<p style="color:var(--error);padding:1rem;">Could not load ${id}.json: ${e.message}</p>`;
+    document.getElementById('ir-chart-bare').innerHTML = '';
   }
-
-  renderIR('#ir-chart-full', compoundData);
-
-  renderIR('#ir-chart-bare', compoundData, {
-    showName: false,
-    showFormula: false,
-    showMW: false,
-    showSignalLabels: false,
-    showTooltipLabels: false,
-  });
 }
 
-loadAndRender();
+const select = document.getElementById('compound-select');
+select.addEventListener('change', () => loadCompound(select.value));
+loadCompound(select.value);
 </script>
 </body>
 </html>
