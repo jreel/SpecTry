@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IR Spectrum Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #fafaf7;
+    --accent: #6b4423;
+    --accent-light: #d4c1a8;
+    --error: #8b2c2c;
+    --success: #2c5f3f;
+    --grid: #e0ddd6;
+    --peak: #2a5a8c;
+    --peak-labeled: #8b2c2c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .ir-chart {
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    margin-bottom: 2rem;
+  }
+
+  .axis text {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    fill: var(--ink);
+  }
+
+  .axis-label {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 13px;
+    fill: var(--ink);
+  }
+
+  .axis path, .axis line {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .grid line {
+    stroke: var(--grid);
+    stroke-width: 0.5;
+    stroke-dasharray: 2, 4;
+  }
+
+  .grid path { stroke: none; }
+
+  .ir-trace {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.2;
+  }
+
+  .label-marker {
+    stroke: var(--peak-labeled);
+    stroke-width: 1;
+    stroke-dasharray: 3, 3;
+  }
+
+  .label-dot {
+    fill: var(--peak-labeled);
+  }
+
+  .label-text {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 10px;
+    fill: var(--peak-labeled);
+    text-anchor: middle;
+  }
+
+  .label-assignment {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 10px;
+    fill: var(--accent);
+    text-anchor: middle;
+  }
+
+  .title-text {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 600;
+    fill: var(--ink);
+  }
+
+  .tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 3px;
+    padding: 0.35rem 0.5rem;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+
+  .tooltip.visible { opacity: 1; }
+
+  h2 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .demo-note {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<h2>Demo 1: Full display (study/review mode)</h2>
+<div class="ir-chart" id="ir-chart-full"></div>
+
+<h2>Demo 2: "Identify the functional group" question mode</h2>
+<p class="demo-note">showName/Formula/MW: false, showSignalLabels: false</p>
+<div class="ir-chart" id="ir-chart-bare"></div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ============================================================
+// IR Spectrum Renderer
+// Reads compound JSON and draws a transmittance IR spectrum.
+// ============================================================
+
+// Embedded test data will be loaded from file; for prototype, inline.
+let compoundData = null;
+
+// --------------- renderIR ---------------
+function renderIR(container, compound, options = {}) {
+  const ir = compound.IR;
+  if (!ir) return;
+
+  const curve = ir.curve || [];
+  const labels = ir.signal_labels || {};
+
+  if (curve.length === 0) return;
+
+  // Display options (same pattern as MS renderer)
+  const show = {
+    name:          options.showName !== false,
+    formula:       options.showFormula !== false,
+    mw:            options.showMW !== false,
+    signalLabels:  options.showSignalLabels !== false,
+    tooltipLabels: options.showTooltipLabels !== false,
+  };
+
+  // Normalize transmittance: detect if data is 0-100 (percent) or 0-1 (fractional)
+  const maxT = d3.max(curve, d => d.transmittance);
+  const tScale = maxT > 2 ? 1 : 100; // multiply fractional data by 100 to get percent
+
+  // Dimensions
+  const width = options.width || 800;
+  const height = options.height || 400;
+  const margin = { top: 40, right: 30, bottom: 55, left: 60 };
+  const plotW = width - margin.left - margin.right;
+  const plotH = height - margin.top - margin.bottom;
+
+  // Scales: x is wavenumber HIGH to LOW (convention), y is %T 0-100
+  const wnExtent = d3.extent(curve, d => d.wavenumber);
+  const xMax = Math.ceil(wnExtent[1] / 100) * 100;  // round up to nearest 100
+  const xMin = Math.floor(wnExtent[0] / 100) * 100;  // round down
+
+  const x = d3.scaleLinear()
+    .domain([xMax, xMin])  // reversed: high wavenumber on left
+    .range([0, plotW]);
+
+  const y = d3.scaleLinear()
+    .domain([0, 100])
+    .range([plotH, 0]);
+
+  // Clear and create SVG
+  d3.select(container).selectAll('*').remove();
+
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', `0 0 ${width} ${height}`);
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Clip path for the trace
+  g.append('defs').append('clipPath')
+    .attr('id', 'plot-clip-' + container.replace(/[^a-zA-Z0-9]/g, ''))
+    .append('rect')
+    .attr('width', plotW)
+    .attr('height', plotH);
+
+  // Background
+  g.append('rect')
+    .attr('width', plotW)
+    .attr('height', plotH)
+    .attr('fill', 'white');
+
+  // Grid lines (horizontal)
+  const yTicks = [0, 20, 40, 60, 80, 100];
+  g.append('g')
+    .attr('class', 'grid')
+    .selectAll('line')
+    .data(yTicks)
+    .enter()
+    .append('line')
+    .attr('x1', 0)
+    .attr('x2', plotW)
+    .attr('y1', d => y(d))
+    .attr('y2', d => y(d));
+
+  // Axes
+  const xAxis = d3.axisBottom(x)
+    .tickSizeOuter(0)
+    .tickValues(d3.range(xMin, xMax + 1, 500).filter(v => v >= xMin && v <= xMax));
+
+  const yAxis = d3.axisLeft(y)
+    .tickValues(yTicks)
+    .tickSizeOuter(0);
+
+  g.append('g')
+    .attr('class', 'axis x-axis')
+    .attr('transform', `translate(0,${plotH})`)
+    .call(xAxis);
+
+  g.append('g')
+    .attr('class', 'axis y-axis')
+    .call(yAxis);
+
+  // Axis labels
+  g.append('text')
+    .attr('class', 'axis-label')
+    .attr('x', plotW / 2)
+    .attr('y', plotH + 42)
+    .attr('text-anchor', 'middle')
+    .text('Wavenumber (cm\u207B\u00B9)');
+
+  g.append('text')
+    .attr('class', 'axis-label')
+    .attr('x', -plotH / 2)
+    .attr('y', -42)
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'rotate(-90)')
+    .text('Transmittance (%)');
+
+  // Draw the IR trace
+  const clipId = 'plot-clip-' + container.replace(/[^a-zA-Z0-9]/g, '');
+  const line = d3.line()
+    .x(d => x(d.wavenumber))
+    .y(d => y(d.transmittance * tScale))
+    .curve(d3.curveLinear);
+
+  g.append('path')
+    .datum(curve)
+    .attr('class', 'ir-trace')
+    .attr('clip-path', `url(#${clipId})`)
+    .attr('d', line);
+
+  // Signal labels: drop lines from top of plot to the absorption
+  if (show.signalLabels && Object.keys(labels).length > 0) {
+    // Find the transmittance at each labeled wavenumber by interpolation
+    const sortedCurve = [...curve].sort((a, b) => a.wavenumber - b.wavenumber);
+
+    const labelEntries = Object.entries(labels).map(([key, info]) => {
+      const wn = info.wavenumber;
+      const tVal = interpolateT(sortedCurve, wn) * tScale;
+      return { key, wn, tVal, assignment: info.assignment, intensity: info.intensity };
+    });
+
+    // Sort labels by wavenumber (high to low, matching visual left to right)
+    labelEntries.sort((a, b) => b.wn - a.wn);
+
+    // Label positioning: collect, resolve collisions, then draw
+    const pendingLabels = labelEntries.map(entry => ({
+      ...entry,
+      xPx: x(entry.wn),
+      // Label sits near top of plot; stagger if needed
+      labelY: 15,
+    }));
+
+    // Collision resolution on label x positions (same approach as MS)
+    pendingLabels.sort((a, b) => a.xPx - b.xPx);
+    for (let pass = 0; pass < 3; pass++) {
+      for (let i = 1; i < pendingLabels.length; i++) {
+        const prev = pendingLabels[i - 1];
+        const curr = pendingLabels[i];
+        const minGap = 28; // minimum px between label centers
+        const overlap = minGap - (curr.xPx - prev.xPx);
+        if (overlap > 0) {
+          const nudge = Math.ceil(overlap / 2);
+          prev.xPx -= nudge;
+          curr.xPx += nudge;
+        }
+      }
+    }
+
+    // Draw labels
+    const labelGroup = g.append('g').attr('class', 'ir-labels');
+
+    pendingLabels.forEach(lbl => {
+      const peakX = x(lbl.wn);
+      const peakY = y(lbl.tVal);
+
+      // Dashed drop line from label to the absorption point
+      labelGroup.append('line')
+        .attr('class', 'label-marker')
+        .attr('x1', lbl.xPx)
+        .attr('y1', lbl.labelY + 8)
+        .attr('x2', peakX)
+        .attr('y2', peakY - 4);
+
+      // Small dot at the absorption
+      labelGroup.append('circle')
+        .attr('class', 'label-dot')
+        .attr('cx', peakX)
+        .attr('cy', peakY)
+        .attr('r', 2.5);
+
+      // Wavenumber text
+      labelGroup.append('text')
+        .attr('class', 'label-text')
+        .attr('x', lbl.xPx)
+        .attr('y', lbl.labelY)
+        .text(lbl.wn);
+    });
+  }
+
+  // Title
+  let title = 'IR Spectrum';
+  if (show.name) title += ': ' + compound.name;
+  const meta = [];
+  if (show.formula && compound.formula) meta.push(compound.formula);
+  if (show.mw && compound.molecular_weight) meta.push('MW ' + compound.molecular_weight);
+  if (meta.length) title += ' (' + meta.join(', ') + ')';
+
+  svg.append('text')
+    .attr('class', 'title-text')
+    .attr('x', margin.left)
+    .attr('y', 24)
+    .text(title);
+
+  // Crosshair tooltip: track mouse position on curve
+  const tooltip = document.getElementById('tooltip');
+
+  // Invisible overlay for mouse tracking
+  const overlay = g.append('rect')
+    .attr('width', plotW)
+    .attr('height', plotH)
+    .attr('fill', 'transparent')
+    .attr('cursor', 'crosshair');
+
+  // Crosshair lines
+  const crosshairV = g.append('line')
+    .attr('stroke', '#999')
+    .attr('stroke-width', 0.5)
+    .attr('stroke-dasharray', '4,3')
+    .style('display', 'none');
+
+  const crosshairH = g.append('line')
+    .attr('stroke', '#999')
+    .attr('stroke-width', 0.5)
+    .attr('stroke-dasharray', '4,3')
+    .style('display', 'none');
+
+  // Bisector for finding closest curve point
+  const bisect = d3.bisector(d => d.wavenumber).left;
+
+  overlay
+    .on('mouseenter', () => {
+      crosshairV.style('display', null);
+      crosshairH.style('display', null);
+    })
+    .on('mousemove', function(event) {
+      const [mx, my] = d3.pointer(event);
+      const wn = x.invert(mx);
+      const tVal = getTransmittanceAt(sortedCurve, wn, tScale);
+
+      if (tVal === null) return;
+
+      const curveY = y(tVal);
+
+      crosshairV.attr('x1', mx).attr('x2', mx).attr('y1', 0).attr('y2', plotH);
+      crosshairH.attr('x1', 0).attr('x2', plotW).attr('y1', curveY).attr('y2', curveY);
+
+      let html = `<strong>${Math.round(wn)} cm\u207B\u00B9</strong><br>${tVal.toFixed(1)}% T`;
+
+      // Check if near a labeled peak
+      if (show.tooltipLabels) {
+        for (const [key, info] of Object.entries(labels)) {
+          if (Math.abs(info.wavenumber - wn) < 15) {
+            html += `<br><em>${info.assignment}</em>`;
+            break;
+          }
+        }
+      }
+
+      tooltip.innerHTML = html;
+      tooltip.classList.add('visible');
+      tooltip.style.left = (event.pageX + 12) + 'px';
+      tooltip.style.top = (event.pageY - 10) + 'px';
+    })
+    .on('mouseleave', () => {
+      crosshairV.style('display', 'none');
+      crosshairH.style('display', 'none');
+      tooltip.classList.remove('visible');
+    });
+
+  // Keep a sorted copy for crosshair lookups
+  const sortedCurve = [...curve].sort((a, b) => a.wavenumber - b.wavenumber);
+}
+
+// Helper: interpolate transmittance at a given wavenumber
+function interpolateT(sortedCurve, wn) {
+  const bisect = d3.bisector(d => d.wavenumber).left;
+  const idx = bisect(sortedCurve, wn);
+  if (idx <= 0) return sortedCurve[0].transmittance;
+  if (idx >= sortedCurve.length) return sortedCurve[sortedCurve.length - 1].transmittance;
+  const a = sortedCurve[idx - 1];
+  const b = sortedCurve[idx];
+  const t = (wn - a.wavenumber) / (b.wavenumber - a.wavenumber);
+  return a.transmittance + t * (b.transmittance - a.transmittance);
+}
+
+// Helper: get transmittance at wavenumber with scale applied
+function getTransmittanceAt(sortedCurve, wn, tScale) {
+  const bisect = d3.bisector(d => d.wavenumber).left;
+  const idx = bisect(sortedCurve, wn);
+  if (idx <= 0 || idx >= sortedCurve.length) return null;
+  const a = sortedCurve[idx - 1];
+  const b = sortedCurve[idx];
+  const t = (wn - a.wavenumber) / (b.wavenumber - a.wavenumber);
+  return (a.transmittance + t * (b.transmittance - a.transmittance)) * tScale;
+}
+
+// --------------- Load and render ---------------
+// For prototype: load from file input or use embedded data
+async function loadAndRender() {
+  // Try loading ethyl_acetate.json from data directory
+  try {
+    const resp = await fetch('../data/ethyl_acetate.json');
+    if (resp.ok) {
+      compoundData = await resp.json();
+    }
+  } catch(e) { /* fall through */ }
+
+  if (!compoundData) {
+    document.body.innerHTML = '<p style="color:var(--error);padding:2rem;">Could not load compound data. Ensure data/ethyl_acetate.json exists.</p>';
+    return;
+  }
+
+  renderIR('#ir-chart-full', compoundData);
+
+  renderIR('#ir-chart-bare', compoundData, {
+    showName: false,
+    showFormula: false,
+    showMW: false,
+    showSignalLabels: false,
+    showTooltipLabels: false,
+  });
+}
+
+loadAndRender();
+</script>
+</body>
+</html>
