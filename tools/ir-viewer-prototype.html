@@ -185,9 +185,9 @@ function renderIR(container, compound, options = {}) {
   const plotH = height - margin.top - margin.bottom;
 
   // Scales: x is wavenumber HIGH to LOW (convention), y is %T 0-100
-  const wnExtent = d3.extent(curve, d => d.wavenumber);
-  const xMax = Math.ceil(wnExtent[1] / 100) * 100;  // round up to nearest 100
-  const xMin = Math.floor(wnExtent[0] / 100) * 100;  // round down
+  // Fixed range matching standard IR charts
+  const xMax = 4000;
+  const xMin = 500;
 
   const x = d3.scaleLinear()
     .domain([xMax, xMin])  // reversed: high wavenumber on left
@@ -235,10 +235,20 @@ function renderIR(container, compound, options = {}) {
     .attr('y1', d => y(d))
     .attr('y2', d => y(d));
 
-  // Axes
-  const xAxis = d3.axisBottom(x)
+  // Axes: major ticks every 500 (labeled), minor ticks every 100 (unlabeled)
+  const majorTicks = d3.range(500, 4001, 500);
+  const minorTicks = d3.range(500, 4001, 100).filter(v => v % 500 !== 0);
+
+  const xAxisMajor = d3.axisBottom(x)
     .tickSizeOuter(0)
-    .tickValues(d3.range(xMin, xMax + 1, 500).filter(v => v >= xMin && v <= xMax));
+    .tickValues(majorTicks)
+    .tickSize(6);
+
+  const xAxisMinor = d3.axisBottom(x)
+    .tickSizeOuter(0)
+    .tickValues(minorTicks)
+    .tickSize(3)
+    .tickFormat('');
 
   const yAxis = d3.axisLeft(y)
     .tickValues(yTicks)
@@ -247,7 +257,13 @@ function renderIR(container, compound, options = {}) {
   g.append('g')
     .attr('class', 'axis x-axis')
     .attr('transform', `translate(0,${plotH})`)
-    .call(xAxis);
+    .call(xAxisMajor);
+
+  g.append('g')
+    .attr('class', 'axis x-axis minor')
+    .attr('transform', `translate(0,${plotH})`)
+    .call(xAxisMinor)
+    .selectAll('text').remove();
 
   g.append('g')
     .attr('class', 'axis y-axis')
