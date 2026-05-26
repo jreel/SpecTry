@@ -262,27 +262,31 @@ function renderIR(container, compound, options = {}) {
     .attr('transform', 'rotate(-90)')
     .text('Transmittance (%)');
 
+  // Smooth the curve to counteract quantized transmittance data.
+  // Gaussian kernel with radius proportional to data density.
+  const smoothedCurve = gaussianSmooth(curve, tScale, 4);
+
   // Draw the IR trace
   const clipId = 'plot-clip-' + container.replace(/[^a-zA-Z0-9]/g, '');
   const line = d3.line()
     .x(d => x(d.wavenumber))
-    .y(d => y(d.transmittance * tScale))
+    .y(d => y(d.t))
     .curve(d3.curveLinear);
 
   g.append('path')
-    .datum(curve)
+    .datum(smoothedCurve)
     .attr('class', 'ir-trace')
     .attr('clip-path', `url(#${clipId})`)
     .attr('d', line);
 
   // Signal labels: drop lines from top of plot to the absorption
   if (show.signalLabels && Object.keys(labels).length > 0) {
-    // Find the transmittance at each labeled wavenumber by interpolation
-    const sortedCurve = [...curve].sort((a, b) => a.wavenumber - b.wavenumber);
+    // Use smoothed data for label placement
+    const sortedSmoothed = [...smoothedCurve].sort((a, b) => a.wavenumber - b.wavenumber);
 
     const labelEntries = Object.entries(labels).map(([key, info]) => {
       const wn = info.wavenumber;
-      const tVal = interpolateT(sortedCurve, wn) * tScale;
+      const tVal = interpolateSmoothed(sortedSmoothed, wn);
       return { key, wn, tVal, assignment: info.assignment, intensity: info.intensity };
     });
 
@@ -382,7 +386,7 @@ function renderIR(container, compound, options = {}) {
     .style('display', 'none');
 
   // Bisector for finding closest curve point
-  const bisect = d3.bisector(d => d.wavenumber).left;
+  const sortedSmoothedForTooltip = [...smoothedCurve].sort((a, b) => a.wavenumber - b.wavenumber);
 
   overlay
     .on('mouseenter', () => {
@@ -392,7 +396,7 @@ function renderIR(container, compound, options = {}) {
     .on('mousemove', function(event) {
       const [mx, my] = d3.pointer(event);
       const wn = x.invert(mx);
-      const tVal = getTransmittanceAt(sortedCurve, wn, tScale);
+      const tVal = interpolateSmoothed(sortedSmoothedForTooltip, wn);
 
       if (tVal === null) return;
 
@@ -423,32 +427,46 @@ function renderIR(container, compound, options = {}) {
       crosshairH.style('display', 'none');
       tooltip.classList.remove('visible');
     });
-
-  // Keep a sorted copy for crosshair lookups
-  const sortedCurve = [...curve].sort((a, b) => a.wavenumber - b.wavenumber);
 }
 
-// Helper: interpolate transmittance at a given wavenumber
-function interpolateT(sortedCurve, wn) {
-  const bisect = d3.bisector(d => d.wavenumber).left;
-  const idx = bisect(sortedCurve, wn);
-  if (idx <= 0) return sortedCurve[0].transmittance;
-  if (idx >= sortedCurve.length) return sortedCurve[sortedCurve.length - 1].transmittance;
-  const a = sortedCurve[idx - 1];
-  const b = sortedCurve[idx];
-  const t = (wn - a.wavenumber) / (b.wavenumber - a.wavenumber);
-  return a.transmittance + t * (b.transmittance - a.transmittance);
+// Gaussian smoothing for quantized IR transmittance data.
+// radius = number of neighboring points on each side to include.
+// Returns array of {wavenumber, t} where t is smoothed %T.
+function gaussianSmooth(curve, tScale, radius) {
+  const n = curve.length;
+  const sigma = radius / 2;
+  const kernel = [];
+  let kernelSum = 0;
+  for (let i = -radius; i <= radius; i++) {
+    const w = Math.exp(-(i * i) / (2 * sigma * sigma));
+    kernel.push(w);
+    kernelSum += w;
+  }
+  // Normalize kernel
+  for (let i = 0; i < kernel.length; i++) kernel[i] /= kernelSum;
+
+  const result = [];
+  for (let i = 0; i < n; i++) {
+    let smoothedT = 0;
+    for (let k = -radius; k <= radius; k++) {
+      const j = Math.max(0, Math.min(n - 1, i + k));
+      smoothedT += curve[j].transmittance * tScale * kernel[k + radius];
+    }
+    result.push({ wavenumber: curve[i].wavenumber, t: smoothedT });
+  }
+  return result;
 }
 
-// Helper: get transmittance at wavenumber with scale applied
-function getTransmittanceAt(sortedCurve, wn, tScale) {
+// Interpolate smoothed transmittance at a given wavenumber
+function interpolateSmoothed(sortedSmoothed, wn) {
   const bisect = d3.bisector(d => d.wavenumber).left;
-  const idx = bisect(sortedCurve, wn);
-  if (idx <= 0 || idx >= sortedCurve.length) return null;
-  const a = sortedCurve[idx - 1];
-  const b = sortedCurve[idx];
-  const t = (wn - a.wavenumber) / (b.wavenumber - a.wavenumber);
-  return (a.transmittance + t * (b.transmittance - a.transmittance)) * tScale;
+  const idx = bisect(sortedSmoothed, wn);
+  if (idx <= 0) return sortedSmoothed[0].t;
+  if (idx >= sortedSmoothed.length) return sortedSmoothed[sortedSmoothed.length - 1].t;
+  const a = sortedSmoothed[idx - 1];
+  const b = sortedSmoothed[idx];
+  const frac = (wn - a.wavenumber) / (b.wavenumber - a.wavenumber);
+  return a.t + frac * (b.t - a.t);
 }
 
 // --------------- Load and render ---------------
