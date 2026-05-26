@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MS Spectrum Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #fafaf7;
+    --accent: #6b4423;
+    --accent-light: #d4c1a8;
+    --error: #8b2c2c;
+    --success: #2c5f3f;
+    --grid: #e0ddd6;
+    --peak: #2a5a8c;
+    --peak-labeled: #8b2c2c;
+    --mol-ion: #6b4423;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .compound-info {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  }
+
+  #ms-chart, #ms-chart-bare {
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+  }
+
+  /* D3 styling */
+  .axis text {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    fill: var(--ink);
+  }
+
+  .axis-label {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 13px;
+    fill: var(--ink);
+  }
+
+  .axis path, .axis line {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .grid line {
+    stroke: var(--grid);
+    stroke-width: 0.5;
+    stroke-dasharray: 2, 4;
+  }
+
+  .grid path {
+    stroke: none;
+  }
+
+  .peak-line {
+    stroke: var(--peak);
+    stroke-width: 1.5;
+  }
+
+  .peak-line.labeled {
+    stroke: var(--peak-labeled);
+    stroke-width: 2;
+  }
+
+  .peak-line.mol-ion {
+    stroke: var(--mol-ion);
+    stroke-width: 2;
+  }
+
+  .peak-label {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 10px;
+    fill: var(--ink);
+    text-anchor: middle;
+  }
+
+  .signal-label {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-anchor: middle;
+  }
+
+  .signal-label.mol-ion {
+    fill: var(--mol-ion);
+  }
+
+  .signal-label.isotope {
+    fill: var(--peak-labeled);
+  }
+
+  .title-text {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 600;
+    fill: var(--ink);
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 3px;
+    padding: 0.35rem 0.5rem;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+
+  .tooltip.visible { opacity: 1; }
+
+  /* Hit area for hover */
+  .peak-hit {
+    stroke: transparent;
+    stroke-width: 8;
+    cursor: crosshair;
+    fill: none;
+  }
+</style>
+</head>
+<body>
+
+<h2 style="font-size:1rem; margin-bottom:0.5rem;">Demo 1: Full display (study/review mode)</h2>
+<div id="ms-chart"></div>
+
+<h2 style="font-size:1rem; margin: 2rem 0 0.5rem;">Demo 2: "Determine the MW" question mode</h2>
+<p style="font-size:0.85rem; color:#666; margin-bottom:0.75rem;">showName/Formula/MW: false, showSignalLabels: false, showTooltipLabels: false</p>
+<div id="ms-chart-bare"></div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ============================================================
+// MS Spectrum Renderer
+// Reads compound JSON and draws a stick-plot mass spectrum.
+// ============================================================
+
+// Embedded test data: 1-bromopropane (has halogen isotope pattern)
+const compoundData = {
+  "name": "1-bromopropane",
+  "formula": "C3H7Br",
+  "molecular_weight": 122.99,
+  "MS": {
+    "raw_peaks": [
+      { "mz": 124, "relative_intensity": 8.3 },
+      { "mz": 122, "relative_intensity": 8.6 },
+      { "mz": 109, "relative_intensity": 1.2 },
+      { "mz": 107, "relative_intensity": 1.5 },
+      { "mz": 95, "relative_intensity": 1 },
+      { "mz": 93, "relative_intensity": 1.1 },
+      { "mz": 81, "relative_intensity": 1.2 },
+      { "mz": 79, "relative_intensity": 1.4 },
+      { "mz": 43, "relative_intensity": 41.3 },
+      { "mz": 42, "relative_intensity": 15.8 },
+      { "mz": 41, "relative_intensity": 100 },
+      { "mz": 40, "relative_intensity": 8.2 },
+      { "mz": 39, "relative_intensity": 58 },
+      { "mz": 38, "relative_intensity": 8.7 },
+      { "mz": 29, "relative_intensity": 10.8 },
+      { "mz": 28, "relative_intensity": 6.1 },
+      { "mz": 27, "relative_intensity": 42.6 },
+      { "mz": 26, "relative_intensity": 9 },
+      { "mz": 15, "relative_intensity": 5.1 }
+    ],
+    "signal_labels": {
+      "M": { "assignment": "molecular ion", "mz": 122 },
+      "Br": { "assignment": "M+2 isotopic peak (Br)", "mz": 124 }
+    }
+  }
+};
+
+function renderMS(container, compound, options = {}) {
+  const ms = compound.MS;
+  if (!ms || !ms.raw_peaks || ms.raw_peaks.length === 0) return;
+
+  const peaks = ms.raw_peaks;
+  const labels = ms.signal_labels || {};
+
+  // Display options: control what's visible per question type
+  // showName:        compound name in title (default true)
+  // showFormula:     formula in title (default true)
+  // showMW:          molecular weight in title (default true)
+  // showSignalLabels: M+, isotope annotations on peaks (default true)
+  // showMzLabels:    m/z numbers above peaks (default true)
+  // showTooltipLabels: assignment text in hover tooltips (default true)
+  const show = {
+    name:          options.showName !== false,
+    formula:       options.showFormula !== false,
+    mw:            options.showMW !== false,
+    signalLabels:  options.showSignalLabels !== false,
+    mzLabels:      options.showMzLabels !== false,
+    tooltipLabels: options.showTooltipLabels !== false,
+  };
+
+  // Build a lookup: mz -> label key(s)
+  const mzToLabel = {};
+  for (const [key, info] of Object.entries(labels)) {
+    const mz = info.mz;
+    if (mz != null) {
+      if (!mzToLabel[mz]) mzToLabel[mz] = [];
+      mzToLabel[mz].push({ key, assignment: info.assignment });
+    }
+  }
+
+  // Dimensions
+  const width = options.width || 800;
+  const height = options.height || 380;
+  const margin = { top: 40, right: 30, bottom: 55, left: 60 };
+  const plotW = width - margin.left - margin.right;
+  const plotH = height - margin.top - margin.bottom;
+
+  // Scales
+  const mzMax = d3.max(peaks, d => d.mz);
+  const xMax = Math.ceil((mzMax + 5) / 10) * 10;
+
+  const x = d3.scaleLinear()
+    .domain([0, xMax])
+    .range([0, plotW]);
+
+  const y = d3.scaleLinear()
+    .domain([0, 105])
+    .range([plotH, 0]);
+
+  // Clear and create SVG
+  d3.select(container).selectAll('*').remove();
+
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', `0 0 ${width} ${height}`);
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Background
+  g.append('rect')
+    .attr('width', plotW)
+    .attr('height', plotH)
+    .attr('fill', 'white');
+
+  // Grid lines (horizontal)
+  const yTicks = [0, 20, 40, 60, 80, 100];
+  g.append('g')
+    .attr('class', 'grid')
+    .selectAll('line')
+    .data(yTicks)
+    .enter()
+    .append('line')
+    .attr('x1', 0)
+    .attr('x2', plotW)
+    .attr('y1', d => y(d))
+    .attr('y2', d => y(d));
+
+  // Axes
+  const xAxis = d3.axisBottom(x)
+    .tickSizeOuter(0)
+    .ticks(Math.min(15, xMax / 10));
+
+  const yAxis = d3.axisLeft(y)
+    .tickValues(yTicks)
+    .tickSizeOuter(0);
+
+  g.append('g')
+    .attr('class', 'axis x-axis')
+    .attr('transform', `translate(0,${plotH})`)
+    .call(xAxis);
+
+  g.append('g')
+    .attr('class', 'axis y-axis')
+    .call(yAxis);
+
+  // Axis labels
+  g.append('text')
+    .attr('class', 'axis-label')
+    .attr('x', plotW / 2)
+    .attr('y', plotH + 42)
+    .attr('text-anchor', 'middle')
+    .text('m/z');
+
+  g.append('text')
+    .attr('class', 'axis-label')
+    .attr('x', -plotH / 2)
+    .attr('y', -42)
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'rotate(-90)')
+    .text('Relative Intensity (%)');
+
+  // Peaks (stick plot)
+  const peakGroup = g.append('g').attr('class', 'peaks');
+
+  // Determine which peaks get m/z labels: tallest in each cluster + signal-labeled
+  // Group peaks by proximity (gap > 2 m/z starts a new cluster)
+  const sorted = [...peaks].sort((a, b) => a.mz - b.mz);
+  const mzLabelSet = new Set();
+
+  // Always label signal-labeled peaks
+  for (const mz of Object.keys(mzToLabel)) mzLabelSet.add(+mz);
+
+  // Cluster and pick tallest per group
+  let cluster = [sorted[0]];
+  for (let i = 1; i <= sorted.length; i++) {
+    const gap = i < sorted.length ? sorted[i].mz - sorted[i - 1].mz : Infinity;
+    if (gap > 2) {
+      // End of cluster: label the tallest
+      const tallest = cluster.reduce((a, b) =>
+        b.relative_intensity > a.relative_intensity ? b : a);
+      mzLabelSet.add(tallest.mz);
+      cluster = i < sorted.length ? [sorted[i]] : [];
+    } else {
+      cluster.push(sorted[i]);
+    }
+  }
+
+  // Two-phase label placement:
+  // Phase 1: collect and collision-resolve m/z labels
+  // Phase 2: stack signal labels (M+, Br, etc.) on top of resolved m/z positions
+  const mzLabels = [];
+  const signalLabels = [];
+
+  peaks.forEach(peak => {
+    const lbl = mzToLabel[peak.mz];
+    const isMolIon = lbl && lbl.some(l => l.key === 'M');
+    const isLabeled = !!lbl;
+
+    // Only highlight labeled peaks when signal labels are shown
+    let peakClass = 'peak-line';
+    if (show.signalLabels) {
+      if (isMolIon) peakClass += ' mol-ion';
+      else if (isLabeled) peakClass += ' labeled';
+    }
+
+    // The visible stick
+    peakGroup.append('line')
+      .attr('class', peakClass)
+      .attr('x1', x(peak.mz))
+      .attr('x2', x(peak.mz))
+      .attr('y1', y(0))
+      .attr('y2', y(peak.relative_intensity));
+
+    // Invisible wider hit area for hover
+    peakGroup.append('line')
+      .attr('class', 'peak-hit')
+      .attr('x1', x(peak.mz))
+      .attr('x2', x(peak.mz))
+      .attr('y1', y(0))
+      .attr('y2', y(peak.relative_intensity))
+      .attr('data-mz', peak.mz)
+      .attr('data-intensity', peak.relative_intensity);
+
+    // Queue m/z label (tallest-per-cluster, signal-labeled, and above threshold)
+    const intensityThreshold = 3;
+    const aboveThreshold = peak.relative_intensity >= intensityThreshold;
+    if (show.mzLabels && mzLabelSet.has(peak.mz) && (aboveThreshold || isLabeled)) {
+      mzLabels.push({
+        mz: peak.mz,
+        xPx: x(peak.mz),
+        yPx: y(peak.relative_intensity) - 5,
+        text: String(peak.mz),
+        hasSignalLabel: show.signalLabels && isLabeled,
+      });
+    }
+
+    // Collect signal label info (will be positioned after m/z collision resolution)
+    if (show.signalLabels && lbl) {
+      lbl.forEach((l, i) => {
+        signalLabels.push({
+          mz: peak.mz,
+          text: l.key === 'M' ? 'M\u207A' : l.key,
+          cls: l.key === 'M' ? 'signal-label mol-ion' : 'signal-label isotope',
+          stackIndex: i,
+          // fallback position if no m/z label exists for this peak
+          fallbackX: x(peak.mz),
+          fallbackY: y(peak.relative_intensity) - 5,
+        });
+      });
+    }
+  });
+
+  // --- Phase 1: resolve m/z label collisions ---
+  mzLabels.sort((a, b) => a.xPx - b.xPx);
+
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 1; i < mzLabels.length; i++) {
+      const prev = mzLabels[i - 1];
+      const curr = mzLabels[i];
+      const prevHalfW = prev.text.length * 2.75 + 2;
+      const currHalfW = curr.text.length * 2.75 + 2;
+      const minGap = prevHalfW + currHalfW + 3;
+      const overlap = minGap - (curr.xPx - prev.xPx);
+
+      if (overlap > 0 && Math.abs(curr.yPx - prev.yPx) < 16) {
+        const nudge = Math.ceil(overlap / 2);
+        prev.xPx -= nudge;
+        curr.xPx += nudge;
+      }
+    }
+  }
+
+  // Draw m/z labels
+  const mzLabelByMz = {};
+  mzLabels.forEach(lbl => {
+    mzLabelByMz[lbl.mz] = lbl;
+    peakGroup.append('text')
+      .attr('class', 'peak-label')
+      .attr('x', lbl.xPx)
+      .attr('y', lbl.yPx)
+      .text(lbl.text);
+  });
+
+  // --- Phase 2: stack signal labels above their resolved m/z labels ---
+  signalLabels.forEach(sl => {
+    const anchor = mzLabelByMz[sl.mz];
+    const xPos = anchor ? anchor.xPx : sl.fallbackX;
+    const baseY = anchor ? anchor.yPx : sl.fallbackY;
+    const yPos = baseY - 13 - (sl.stackIndex * 14);
+
+    peakGroup.append('text')
+      .attr('class', sl.cls)
+      .attr('x', xPos)
+      .attr('y', yPos)
+      .text(sl.text);
+  });
+
+  // Title
+  let title = 'Mass Spectrum';
+  if (show.name) title += ': ' + compound.name;
+  const meta = [];
+  if (show.formula && compound.formula) meta.push(compound.formula);
+  if (show.mw && compound.molecular_weight) meta.push('MW ' + compound.molecular_weight);
+  if (meta.length) title += ' (' + meta.join(', ') + ')';
+
+  svg.append('text')
+    .attr('class', 'title-text')
+    .attr('x', margin.left)
+    .attr('y', 24)
+    .text(title);
+
+  // Tooltip interaction
+  const tooltip = document.getElementById('tooltip');
+
+  svg.selectAll('.peak-hit')
+    .on('mouseenter', function(event) {
+      const mz = +this.getAttribute('data-mz');
+      const intensity = +this.getAttribute('data-intensity');
+      const lbl = mzToLabel[mz];
+
+      let html = `<strong>m/z ${mz}</strong> (${intensity.toFixed(1)}%)`;
+      if (show.tooltipLabels && lbl) {
+        lbl.forEach(l => {
+          html += `<br>${l.key === 'M' ? 'M⁺' : l.key}: ${l.assignment}`;
+        });
+      }
+      tooltip.innerHTML = html;
+      tooltip.classList.add('visible');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style.left = (event.pageX + 12) + 'px';
+      tooltip.style.top = (event.pageY - 10) + 'px';
+    })
+    .on('mouseleave', function() {
+      tooltip.classList.remove('visible');
+    });
+}
+
+// Demo 1: render with full labels (default; for answer review / study mode)
+renderMS('#ms-chart', compoundData);
+
+// Demo 2: render as a "determine the MW" question (bare spectrum)
+renderMS('#ms-chart-bare', compoundData, {
+  showName: false,
+  showFormula: false,
+  showMW: false,
+  showSignalLabels: false,
+  showTooltipLabels: false,
+});
+</script>
+</body>
+</html>

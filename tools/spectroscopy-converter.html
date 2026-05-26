@@ -1,0 +1,3876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spectroscopy Compound Converter</title>
+<style>
+:root {
+  --ink: #1a1a1a;
+  --paper: #fafaf7;
+  --rule: #d4d2cc;
+  --accent: #6b4423;
+  --accent-soft: #f0ebe2;
+  --error: #8b2c2c;
+  --success: #2c5f3f;
+  --muted: #6b6862;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Charter", "Iowan Old Style", "Source Serif Pro", Georgia, serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+header {
+  padding: 2rem 3rem 1.5rem;
+  border-bottom: 2px solid var(--ink);
+  background: var(--paper);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2rem;
+}
+
+.header-text { flex: 1; }
+
+h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.rdkit-status {
+  font-size: 0.75rem;
+  font-family: "SF Mono", monospace;
+  color: var(--muted);
+  padding: 0.3rem 0.6rem;
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.rdkit-status.ready { color: var(--success); border-color: var(--success); }
+.rdkit-status.err { color: var(--error); border-color: var(--error); }
+
+.header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+#open-file-label-header {
+  display: inline-block;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+#open-file-label-header:hover { background: var(--accent); border-color: var(--accent); }
+#open-file { display: none; }
+
+.example-link {
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.data-sources {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.data-source-label { font-style: italic; margin-right: 0.5rem; }
+
+.data-sources a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 1px;
+  margin-right: 0.25rem;
+}
+
+.data-sources a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+
+.source-note {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-right: 1rem;
+}
+
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 3rem;
+}
+
+.input-panel { margin-bottom: 2rem; }
+
+.identity-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.identity-section h2 { margin-top: 0; }
+
+.identity-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 0.6fr;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.identity-grid-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.output-panel {
+  border-top: 2px solid var(--ink);
+  padding-top: 1.5rem;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem 2rem;
+}
+
+.input-column h2 { margin-top: 0; }
+
+@media (max-width: 900px) {
+  .input-grid { grid-template-columns: 1fr; }
+  .identity-grid { grid-template-columns: 1fr 1fr; }
+  .identity-grid-bottom { grid-template-columns: 1fr; }
+}
+
+h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--rule);
+  letter-spacing: 0.02em;
+}
+
+h2:first-of-type { margin-top: 0; }
+
+h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 1rem 0 0.4rem;
+  color: var(--muted);
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: var(--ink);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+input[type="text"], input[type="number"], textarea {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.85rem;
+  border: 1px solid var(--rule);
+  background: white;
+  border-radius: 2px;
+  color: var(--ink);
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+input[readonly] {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 4rem;
+}
+
+.parse-status {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.5rem;
+  margin-top: 0.3rem;
+  border-radius: 2px;
+  font-family: "SF Mono", "Menlo", monospace;
+}
+
+.parse-status.ok {
+  background: #e8f0ea;
+  color: var(--success);
+  border-left: 3px solid var(--success);
+}
+
+.parse-status.err {
+  background: #f5e8e8;
+  color: var(--error);
+  border-left: 3px solid var(--error);
+}
+
+.parse-status.empty {
+  background: #f0eee9;
+  color: var(--muted);
+  border-left: 3px solid var(--rule);
+}
+
+button {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s;
+}
+
+button:hover { background: var(--accent); border-color: var(--accent); }
+
+button.secondary {
+  background: transparent;
+  color: var(--ink);
+}
+
+button.secondary:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+button:disabled {
+  background: var(--rule);
+  border-color: var(--rule);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+pre {
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  background: white;
+  border: 1px solid var(--rule);
+  padding: 1rem;
+  border-radius: 2px;
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.preview-stats {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: "SF Mono", monospace;
+}
+
+.preview-buttons { display: flex; gap: 0.5rem; }
+
+#download {
+  background: var(--accent);
+  border-color: var(--accent);
+  font-size: 0.9rem;
+}
+
+#download:hover { background: var(--ink); border-color: var(--ink); }
+
+.signal-labels-section {
+  background: white;
+  border: 1px solid var(--rule);
+  padding: 0.6rem 0.75rem;
+  border-radius: 2px;
+  margin-bottom: 0.5rem;
+}
+
+.help-mini {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0 0 0.4rem;
+}
+
+.signal-label-row {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+  align-items: center;
+}
+
+/* H row: key | shift | mult | J | integration | description | × */
+.signal-label-row.h-row {
+  grid-template-columns: 0.3fr 0.45fr 0.45fr 0.85fr 0.3fr 1.6fr auto;
+}
+
+/* C row: SDBS# | key | shift | equiv | description | × */
+.signal-label-row.c-row {
+  grid-template-columns: 0.35fr 0.3fr 0.6fr 0.5fr 1.8fr auto;
+}
+
+/* IR row: key | wavenumber | intensity-class | assignment | × */
+.signal-label-row.ir-row {
+  grid-template-columns: 0.3fr 0.7fr 0.7fr 2.0fr auto;
+}
+
+/* MS row: key | m/z | assignment | × */
+.signal-label-row.ms-row {
+  grid-template-columns: 0.6fr 0.4fr 2.0fr auto;
+}
+
+.signal-label-row input,
+.signal-label-row select {
+  font-size: 0.78rem;
+  padding: 0.3rem 0.4rem;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+}
+
+.signal-label-row select {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--ink);
+}
+
+.signal-label-row .label-desc {
+  font-family: "Charter", Georgia, serif;
+}
+
+.label-readonly {
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.75rem;
+  color: var(--accent);
+  padding: 0.3rem 0.45rem;
+  background: var(--accent-soft);
+  border-radius: 2px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-weight: 600;
+}
+
+.signal-label-header {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  padding: 0 0.4rem;
+}
+
+.signal-label-header.h-row {
+  grid-template-columns: 0.3fr 0.45fr 0.45fr 0.85fr 0.3fr 1.6fr 1.5rem;
+}
+
+.signal-label-header.c-row {
+  grid-template-columns: 0.35fr 0.3fr 0.6fr 0.5fr 1.8fr 1.5rem;
+}
+
+.signal-label-header.ir-row {
+  grid-template-columns: 0.3fr 0.7fr 0.7fr 2.0fr 1.5rem;
+}
+
+.signal-label-header.ms-row {
+  grid-template-columns: 0.6fr 0.4fr 2.0fr 1.5rem;
+}
+
+.ir-threshold-control {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--accent-soft);
+  border-radius: 2px;
+  font-size: 0.75rem;
+}
+
+.remove-btn {
+  background: transparent;
+  color: var(--error);
+  border: 1px solid var(--rule);
+  padding: 0.2rem 0.45rem;
+  font-size: 0.8rem;
+}
+
+.remove-btn:hover {
+  background: #f5e8e8;
+  border-color: var(--error);
+}
+
+.small-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.small-btn:hover { background: var(--accent-soft); }
+
+.integration-target {
+  font-family: "SF Mono", monospace;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 2px;
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.integration-target.ok {
+  background: #e8f0ea;
+  color: var(--success);
+  border-left: 3px solid var(--success);
+}
+
+.integration-target.warn {
+  background: #fdf5e6;
+  color: #a86e1e;
+  border-left: 3px solid #a86e1e;
+}
+
+.integration-target.err {
+  background: #f5e8e8;
+  color: var(--error);
+  border-left: 3px solid var(--error);
+}
+
+.jcamp-loader {
+  background: var(--accent-soft);
+  border: 1px dashed var(--accent);
+  border-radius: 2px;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.jcamp-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+input[type="file"] {
+  font-family: inherit;
+  font-size: 0.8rem;
+  background: white;
+  border: 1px solid var(--rule);
+  padding: 0.3rem;
+  border-radius: 2px;
+}
+
+footer {
+  padding: 1rem 3rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  font-style: italic;
+}
+
+.computed-note {
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-style: italic;
+  font-weight: normal;
+}
+
+#preview-warnings { margin-bottom: 0.5rem; }
+
+/* ================================================================
+   IR Assignment Combobox
+   ================================================================ */
+.ir-combobox {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.ir-combobox input.label-assignment {
+  width: 100%;
+  padding-right: 1.6rem;
+  font-family: "Charter", Georgia, serif;
+}
+
+.ir-combobox .combo-toggle {
+  position: absolute;
+  right: 0.3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0.15rem 0.25rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.ir-combobox .combo-toggle:hover { color: var(--accent); }
+
+.ir-combo-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 220px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid var(--rule);
+  border-top: none;
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.ir-combo-dropdown.open { display: block; }
+
+.ir-combo-option {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid #f0eee9;
+}
+
+.ir-combo-option:last-child { border-bottom: none; }
+.ir-combo-option:hover,
+.ir-combo-option.highlighted { background: var(--accent-soft); }
+
+.ir-combo-option .combo-label {
+  font-family: "Charter", Georgia, serif;
+  color: var(--ink);
+  flex: 1;
+}
+
+.ir-combo-option .combo-meta {
+  font-family: "SF Mono", monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.ir-combo-option .combo-tag {
+  font-size: 0.6rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.ir-combo-no-match {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ================================================================
+   IR Reference Sidebar (full-height right panel)
+   ================================================================ */
+.ir-ref-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100vh;
+  background: var(--paper);
+  border-left: 2px solid var(--ink);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  box-shadow: -4px 0 16px rgba(0,0,0,0.08);
+}
+
+.ir-ref-sidebar.open { transform: translateX(0); }
+
+body.ir-sidebar-open main,
+body.ir-sidebar-open header,
+body.ir-sidebar-open footer {
+  margin-right: 420px;
+  transition: margin-right 0.25s ease;
+}
+
+.ir-ref-sidebar-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--accent-soft);
+}
+
+.ir-ref-sidebar-header h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.ir-ref-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  line-height: 1;
+}
+
+.ir-ref-close:hover { color: var(--error); }
+
+.ir-ref-filters {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+
+.ir-ref-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.15rem 0.5rem;
+}
+
+.ir-ref-filter-grid label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: normal;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  margin-bottom: 0;
+}
+
+.ir-ref-filter-grid input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.ir-ref-filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.35rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid #eee;
+}
+
+.ir-ref-filter-actions button {
+  font-size: 0.65rem;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+.ir-ref-filter-actions button:hover { color: var(--ink); }
+
+.ir-ref-count {
+  font-size: 0.63rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-left: auto;
+}
+
+.ir-ref-table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0.5rem 0.5rem;
+}
+
+.ir-ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+}
+
+.ir-ref-table th {
+  text-align: left;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 0.3rem 0.35rem;
+  border-bottom: 1px solid var(--rule);
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+}
+
+.ir-ref-table td {
+  padding: 0.2rem 0.35rem;
+  border-bottom: 1px solid #f0eee9;
+  font-family: "SF Mono", monospace;
+  vertical-align: top;
+}
+
+.ir-ref-table td:nth-child(2),
+.ir-ref-table td:nth-child(3) {
+  font-family: "Charter", Georgia, serif;
+}
+
+.ir-ref-table tr:hover { background: #faf8f4; }
+.ir-ref-table .ref-hidden { display: none; }
+
+/* Toggle button in the IR section */
+.ir-ref-toggle-btn {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.72rem;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: inherit;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-left: 0.5rem;
+}
+
+.ir-ref-toggle-btn:hover { background: #e8e0d4; }
+
+@media (max-width: 900px) {
+  .ir-ref-sidebar { width: 100vw; }
+  body.ir-sidebar-open main,
+  body.ir-sidebar-open header,
+  body.ir-sidebar-open footer { margin-right: 0; }
+}
+</style>
+
+<script src="https://unpkg.com/@rdkit/rdkit/dist/RDKit_minimal.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="header-text">
+    <h1>Spectroscopy Compound Converter</h1>
+    <p class="subtitle">
+      Create new or edit existing compound JSON.
+      <span class="example-link" id="load-example">Load ethyl acetate example</span>
+    </p>
+    <div class="data-sources">
+      <span class="data-source-label">Data sources:</span>
+      <a href="https://sdbs.db.aist.go.jp/" target="_blank" rel="noopener">SDBS</a>
+      <span class="source-note">(NMR, MS)</span>
+      <a href="https://webbook.nist.gov/chemistry/" target="_blank" rel="noopener">NIST WebBook</a>
+      <span class="source-note">(IR via JCAMP-DX)</span>
+      <a href="https://www.wikidata.org/" target="_blank" rel="noopener">Wikidata</a>
+      <span class="source-note">(structure lookup, auto-resolves from name; falls back to Wikipedia)</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <label for="open-file" id="open-file-label-header">⤒ Open existing .json</label>
+    <input type="file" id="open-file" accept=".json">
+    <div class="rdkit-status" id="rdkit-status">Loading RDKit…</div>
+  </div>
+</header>
+
+<main>
+<section class="input-panel">
+
+<!-- Identity section spans full width at the top -->
+<div class="identity-section">
+<h2>Compound identity</h2>
+<div class="identity-grid">
+  <div>
+    <label>Name <span class="computed-note">(tab away to auto-resolve)</span></label>
+    <input type="text" id="name" placeholder="ethyl acetate">
+  </div>
+  <div>
+    <label>Formula <span class="computed-note">(auto-filled from Wikidata)</span></label>
+    <input type="text" id="formula" placeholder="C4H8O2">
+  </div>
+  <div>
+    <label>Molecular weight <span class="computed-note">(auto from formula)</span></label>
+    <input type="number" id="mw" step="0.01" readonly>
+  </div>
+  <div>
+    <label>IHD <span class="computed-note">(auto from formula)</span></label>
+    <input type="number" id="ihd" readonly>
+  </div>
+</div>
+
+<div class="identity-grid-bottom">
+  <div>
+    <label>SMILES <span class="computed-note">(auto-resolved from name, or type manually)</span></label>
+    <input type="text" id="smiles" placeholder="CCOC(=O)C">
+    <div class="parse-status empty" id="smiles-status">no structure yet</div>
+  </div>
+  <div>
+    <label>IUPAC name <span class="computed-note">(auto-suggestion — verify before saving)</span></label>
+    <input type="text" id="iupac" placeholder="ethyl ethanoate">
+    <div class="parse-status empty" id="iupac-status" style="display:none;"></div>
+  </div>
+</div>
+</div>
+
+<!-- Technique sections in 2x2 grid: 13C | 1H above, MS | IR below -->
+<div class="input-grid">
+
+<div class="input-column">
+<h2>¹³C NMR</h2>
+<label>Solvent</label>
+<input type="text" id="c-solvent" placeholder="CDCl3" value="CDCl3">
+
+<h3>Carbon signal labels</h3>
+<div class="signal-labels-section" id="c-signal-labels">
+  <p class="help-mini">Auto-created from ¹³C signals. Set equivalent_count &gt; 1 for symmetric molecules.</p>
+</div>
+<button class="small-btn" id="add-c-label">+ add carbon label</button>
+
+<label style="margin-top:0.75rem;">Peak data</label>
+<textarea id="c-nmr" rows="6" placeholder="Paste tab-separated data directly from SDBS:
+ppm    Int.    Assign.
+
+171.08    527    4
+60.44     1000   3
+21.00     571    2
+14.28     857    1"></textarea>
+<div class="parse-status empty" id="c-status">no data yet</div>
+</div>
+
+<div class="input-column">
+<h2>¹H NMR</h2>
+<label>Solvent</label>
+<input type="text" id="h-solvent" placeholder="CDCl3" value="CDCl3">
+
+<h3>Proton signal labels</h3>
+<div class="signal-labels-section" id="h-signal-labels">
+  <p class="help-mini">Auto-created from ¹H multiplets. Fill in assignments and integration (lowest-terms ratio).</p>
+</div>
+<div id="h-integration-target"></div>
+<button class="small-btn" id="add-h-label">+ add proton label</button>
+
+<label style="margin-top:0.75rem;">Peak data</label>
+<textarea id="h-nmr" rows="10" placeholder="Paste tab-separated raw peak list directly from SDBS:
+Hz    ppm    Int.
+
+1658.39    4.148    73
+1651.25    4.130    219
+1644.10    4.112    221
+1636.96    4.095    75
+815.98     2.041    1000
+510.07     1.276    332
+502.99     1.258    652
+495.79     1.240    329"></textarea>
+<div class="parse-status empty" id="h-status">no data yet</div>
+</div>
+
+<div class="input-column">
+<h2>Mass spectrum</h2>
+
+<h3>MS signal labels</h3>
+<div class="signal-labels-section" id="ms-signal-labels">
+  <p class="help-mini">Molecular ion auto-labeled when MS data is pasted. Add labels for isotope peaks (M+2 for Cl/Br) as needed.</p>
+</div>
+<button class="small-btn" id="add-ms-label">+ add MS label</button>
+
+<label style="margin-top:0.75rem;">Peak data <span class="computed-note">(M⁺ auto-detected from data + formula)</span></label>
+<textarea id="ms" rows="8" placeholder="Paste tab-separated m/z and intensity directly from SDBS:
+14.0    1.3
+15.0    6.2
+29.0    13.7
+43.0    100.0
+88.0    5.1"></textarea>
+<div class="parse-status empty" id="ms-status">no data yet</div>
+</div>
+
+<div class="input-column">
+<h2>IR</h2>
+
+<div class="jcamp-loader">
+  <label>Load JCAMP-DX file from NIST WebBook</label>
+  <div class="jcamp-controls">
+    <input type="file" id="jcamp-file" accept=".jdx,.dx,.jcamp">
+    <span class="help-mini" style="margin-left:0.5rem;">or paste peak list manually below</span>
+  </div>
+  <div class="parse-status empty" id="jcamp-status">no JCAMP file loaded</div>
+</div>
+
+<h3>IR signal labels</h3>
+<div class="ir-threshold-control">
+  <label style="font-size:0.75rem; margin-right:0.5rem;">Auto-label peaks with %T below:</label>
+  <input type="number" id="ir-threshold" value="20" min="0" max="100" step="5" style="width:4rem;">
+  <button class="small-btn" id="rebuild-ir-labels" style="margin-left:0.5rem;">⟲ Rebuild labels from threshold</button>
+  <button class="ir-ref-toggle-btn" id="ir-ref-toggle" type="button">📖 IR Reference</button>
+</div>
+<div class="signal-labels-section" id="ir-signal-labels">
+  <p class="help-mini">Auto-created for all peaks below the threshold. Suggested assignments are filtered by compound structure (e.g., aromatic not suggested when IHD &lt; 4). Edit, add, or delete to customize.</p>
+</div>
+<button class="small-btn" id="add-ir-label">+ add IR label</button>
+
+<label style="margin-top:0.75rem;">Peak data <span class="computed-note">(wavenumber + %T; lower T = stronger)</span></label>
+<textarea id="ir" rows="8" placeholder="If loaded from JCAMP-DX: peaks are auto-detected as local minima.
+
+Or paste tab-separated wavenumber + %transmittance manually:
+3462    81
+2983    33
+1743    4
+1480    60
+1374    13
+1243    6
+1048    10"></textarea>
+<div class="parse-status empty" id="ir-status">no data yet</div>
+</div>
+
+</div>
+
+<div class="actions">
+  <button id="generate">Regenerate JSON preview</button>
+  <button class="secondary" id="clear-all">Clear all</button>
+</div>
+
+</section>
+
+<section class="output-panel">
+
+<div class="preview-header">
+  <div>
+    <h2 style="margin:0; border:none; display:inline-block;">JSON preview</h2>
+    <span class="preview-stats" id="stats" style="margin-left:1rem;">no compound built</span>
+  </div>
+  <div class="preview-buttons">
+    <button id="download">⤓ Download .json</button>
+  </div>
+</div>
+<div id="preview-warnings"></div>
+<pre id="json-output">// Fill in fields above
+// JSON output will appear here and update as you type.</pre>
+
+</section>
+</main>
+
+<!-- IR Reference Sidebar (full-height right panel) -->
+<aside class="ir-ref-sidebar" id="ir-ref-sidebar">
+  <div class="ir-ref-sidebar-header">
+    <h3>IR Vibration Reference (Pavia)</h3>
+    <button class="ir-ref-close" id="ir-ref-close" type="button" title="Close">×</button>
+  </div>
+  <div class="ir-ref-filters">
+    <div class="ir-ref-filter-grid" id="ir-ref-filters">
+      <!-- populated by JS -->
+    </div>
+    <div class="ir-ref-filter-actions">
+      <button type="button" id="ir-ref-clear-filters">Clear all</button>
+      <span class="ir-ref-count" id="ir-ref-count"></span>
+    </div>
+  </div>
+  <div class="ir-ref-table-wrap">
+    <table class="ir-ref-table">
+      <thead>
+        <tr><th>Bond</th><th>Functional Group</th><th>Vibration</th><th>cm⁻¹</th><th>Int.</th></tr>
+      </thead>
+      <tbody id="ir-ref-tbody">
+        <!-- populated by JS -->
+      </tbody>
+    </table>
+  </div>
+</aside>
+
+<footer>
+  Spectroscopy practice authoring tool. Vanilla HTML/CSS/JS + RDKit.js.
+</footer>
+
+<script>
+// =====================================================================
+// RDKIT.JS LOADING
+// =====================================================================
+
+let RDKitModule = null;
+const rdkitStatusEl = document.getElementById('rdkit-status');
+
+if (typeof initRDKitModule === 'function') {
+  initRDKitModule().then(rdk => {
+    RDKitModule = rdk;
+    rdkitStatusEl.textContent = `RDKit ${rdk.version()} ready`;
+    rdkitStatusEl.className = 'rdkit-status ready';
+  }).catch(err => {
+    rdkitStatusEl.textContent = 'RDKit failed to load (SMILES validation disabled)';
+    rdkitStatusEl.className = 'rdkit-status err';
+    console.error(err);
+  });
+} else {
+  rdkitStatusEl.textContent = 'RDKit script not available';
+  rdkitStatusEl.className = 'rdkit-status err';
+}
+
+// =====================================================================
+// FORMULA PARSING + MW/IHD CALCULATION
+// =====================================================================
+
+const ATOMIC_WEIGHTS = {
+  H: 1.008, D: 2.014, C: 12.011, N: 14.007, O: 15.999,
+  F: 18.998, P: 30.974, S: 32.06, Cl: 35.45, Br: 79.904, I: 126.904,
+  Si: 28.085, B: 10.81
+};
+
+const NOMINAL_MASSES = {
+  H: 1, D: 2, C: 12, N: 14, O: 16, F: 19, P: 31, S: 32,
+  Cl: 35, Br: 79, I: 127, Si: 28, B: 11
+};
+
+function parseFormula(formula) {
+  if (!formula) return null;
+  const pattern = /([A-Z][a-z]?)(\d*)/g;
+  const matches = [...formula.matchAll(pattern)];
+  if (matches.length === 0) return null;
+  const counts = {};
+  for (const m of matches) {
+    const element = m[1];
+    if (!element) continue;
+    const count = m[2] ? parseInt(m[2]) : 1;
+    counts[element] = (counts[element] || 0) + count;
+  }
+  if (Object.keys(counts).length === 0) return null;
+  return counts;
+}
+
+function computeMW(counts) {
+  let mw = 0;
+  for (const [el, n] of Object.entries(counts)) {
+    if (el in ATOMIC_WEIGHTS) mw += ATOMIC_WEIGHTS[el] * n;
+  }
+  return Math.round(mw * 100) / 100;
+}
+
+function computeIHD(counts) {
+  const C = counts.C || 0;
+  const H = (counts.H || 0) + (counts.D || 0);
+  const N = counts.N || 0;
+  const X = (counts.F || 0) + (counts.Cl || 0) + (counts.Br || 0) + (counts.I || 0);
+  const ihd = (2 * C + 2 + N - H - X) / 2;
+  return ihd >= 0 ? ihd : null;
+}
+
+function computeNominalMass(counts) {
+  let m = 0;
+  for (const [el, n] of Object.entries(counts)) {
+    if (el in NOMINAL_MASSES) m += NOMINAL_MASSES[el] * n;
+  }
+  return m;
+}
+
+function updateFormulaDerived() {
+  const formula = document.getElementById('formula').value.trim();
+  const counts = parseFormula(formula);
+  if (!counts) {
+    document.getElementById('mw').value = '';
+    document.getElementById('ihd').value = '';
+    return;
+  }
+  document.getElementById('mw').value = computeMW(counts) || '';
+  const ihd = computeIHD(counts);
+  document.getElementById('ihd').value = (ihd !== null) ? ihd : '';
+}
+
+document.getElementById('formula').addEventListener('input', () => {
+  updateFormulaDerived();
+  // Re-run any auto-fills that depend on formula
+  autoCreateMSLabels();
+  refreshIntegrationTarget();
+  updatePreview();
+});
+
+// =====================================================================
+// WIKIDATA / WIKIPEDIA AUTO-RESOLVE (name → SMILES + formula + IUPAC)
+// =====================================================================
+
+document.getElementById('name').addEventListener('blur', resolveCompoundFromName);
+
+async function resolveCompoundFromName() {
+  const name = document.getElementById('name').value.trim();
+  const smilesField = document.getElementById('smiles');
+  const formulaField = document.getElementById('formula');
+  const iupacField = document.getElementById('iupac');
+  const iupacStatusEl = document.getElementById('iupac-status');
+  const statusEl = document.getElementById('smiles-status');
+
+  if (!name) return;
+  // Skip if all the auto-fillable fields are already populated
+  if (smilesField.value.trim() && formulaField.value.trim()) return;
+
+  statusEl.className = 'parse-status empty';
+  statusEl.textContent = `looking up "${name}" in Wikidata…`;
+
+  let result = null;
+  try {
+    result = await resolveFromWikidata(name);
+  } catch (e) {
+    console.warn('Wikidata lookup failed:', e);
+  }
+
+  // If Wikidata didn't provide complete data (and especially since Wikidata
+  // typically has no IUPAC name), also try Wikipedia and merge in any missing
+  // fields from there.
+  const wikidataMissing = !result || !result.smiles || !result.formula || !result.iupac;
+  if (wikidataMissing) {
+    statusEl.textContent = result
+      ? `got partial data from Wikidata; filling in from Wikipedia…`
+      : `Wikidata had nothing; trying Wikipedia…`;
+    try {
+      const wikiResult = await resolveFromWikipedia(name);
+      if (wikiResult) {
+        result = result || {};
+        // Merge: Wikidata takes precedence where present, Wikipedia fills gaps
+        if (!result.smiles && wikiResult.smiles) result.smiles = wikiResult.smiles;
+        if (!result.formula && wikiResult.formula) result.formula = wikiResult.formula;
+        if (!result.iupac && wikiResult.iupac) result.iupac = wikiResult.iupac;
+      }
+    } catch (e) {
+      console.warn('Wikipedia lookup failed:', e);
+    }
+  }
+
+  if (!result || (!result.smiles && !result.formula && !result.iupac)) {
+    statusEl.className = 'parse-status err';
+    statusEl.textContent = `Couldn't auto-resolve "${name}" — type SMILES manually`;
+    return;
+  }
+
+  // Apply whatever we got
+  if (!smilesField.value.trim() && result.smiles) {
+    smilesField.value = result.smiles;
+    validateSmiles();
+  }
+  if (!formulaField.value.trim() && result.formula) {
+    formulaField.value = result.formula;
+    updateFormulaDerived();
+  }
+  if (!iupacField.value.trim() && result.iupac) {
+    iupacField.value = result.iupac;
+    iupacStatusEl.style.display = 'block';
+    iupacStatusEl.className = 'parse-status err';
+    iupacStatusEl.textContent = `⚠ verify accuracy — auto-resolved IUPAC names should be checked`;
+  }
+  // If we already got a clean SMILES/formula from Wikidata or Wikipedia,
+  // restore the smiles-status display, since validateSmiles set its own message.
+  updatePreview();
+}
+
+// Look up compound data from Wikidata.
+// Step 1: search the wbsearchentities endpoint for the entity matching the name.
+// Step 2: fetch the entity's claims and pull P233 (SMILES), P274 (formula).
+async function resolveFromWikidata(name) {
+  // Step 1: search
+  const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=en&format=json&origin=*&type=item&limit=5`;
+  const searchResp = await fetchWithTimeout(searchUrl, 10000);
+  if (!searchResp.ok) throw new Error(`Wikidata search HTTP ${searchResp.status}`);
+  const searchData = await searchResp.json();
+  if (!searchData.search || searchData.search.length === 0) return null;
+
+  // Try each search hit in order; the first one that has a SMILES claim wins.
+  // Wikidata search isn't always exact (e.g. "ethanol" might rank a drug brand
+  // higher than the chemical itself), so iterating is safer than picking [0].
+  for (const hit of searchData.search) {
+    const entityId = hit.id;
+    const entityUrl = `https://www.wikidata.org/wiki/Special:EntityData/${entityId}.json`;
+    const entityResp = await fetchWithTimeout(entityUrl, 10000);
+    if (!entityResp.ok) continue;
+    const entityData = await entityResp.json();
+    const claims = entityData?.entities?.[entityId]?.claims;
+    if (!claims) continue;
+
+    const smiles = extractWikidataClaim(claims, 'P233');     // canonical SMILES
+    const formula = extractWikidataClaim(claims, 'P274');    // chemical formula
+    if (!smiles && !formula) continue;
+    // Convert Hill-notation formula to plain (Wikidata stores formulae with
+    // subscript markup like "C_{2}H_{6}O"; strip the markup for a clean string)
+    return {
+      smiles: smiles || null,
+      formula: formula ? cleanWikidataFormula(formula) : null,
+      iupac: null  // Wikidata's IUPAC name (P2017) isn't always present; skip for now
+    };
+  }
+  return null;
+}
+
+function extractWikidataClaim(claims, prop) {
+  const arr = claims[prop];
+  if (!arr || arr.length === 0) return null;
+  // Prefer the first claim with a string-valued datavalue
+  for (const claim of arr) {
+    const val = claim?.mainsnak?.datavalue?.value;
+    if (typeof val === 'string') return val;
+  }
+  return null;
+}
+
+function cleanWikidataFormula(raw) {
+  // Wikidata stores chemical formulas using Unicode subscript characters
+  // (₀-₉) for digits and Unicode superscript characters (⁰-⁹, ⁺, ⁻) for charges.
+  // Convert these to plain ASCII digits so downstream formula parsing works.
+  // (Examples: "C₂H₆O" → "C2H6O", "SO₄²⁻" → "SO42-")
+  const subscriptMap = {
+    '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
+    '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9'
+  };
+  const superscriptMap = {
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+    '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+    '⁺': '+', '⁻': '-'
+  };
+  return raw.split('').map(ch =>
+    subscriptMap[ch] || superscriptMap[ch] || ch
+  ).join('');
+}
+
+// Wikipedia fallback: fetch the page's wikitext via the API and parse the
+// chembox infobox for SMILES, Formula, and IUPACName.
+async function resolveFromWikipedia(name) {
+  const url = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(name)}&prop=wikitext&format=json&origin=*&redirects=true`;
+  const resp = await fetchWithTimeout(url, 10000);
+  if (!resp.ok) throw new Error(`Wikipedia HTTP ${resp.status}`);
+  const data = await resp.json();
+  const wikitext = data?.parse?.wikitext?.['*'];
+  if (!wikitext) return null;
+
+  // Chembox infobox lines look like:
+  //   | SMILES = CCOC(C)=O
+  //   | Formula = C4H8O2
+  //   | IUPACName = ethyl acetate
+  // Sometimes with HTML/wiki refs after the value: "...|IUPACName = foo<ref>bar</ref>"
+  const extractField = (fields) => {
+    const fieldList = Array.isArray(fields) ? fields : [fields];
+    for (const field of fieldList) {
+      const re = new RegExp(`\\|\\s*${field}\\s*=\\s*([^\\n|<]+)`, 'i');
+      const m = wikitext.match(re);
+      if (m && m[1].trim()) return cleanWikitext(m[1].trim());
+    }
+    return null;
+  };
+
+  return {
+    smiles: extractField(['SMILES', 'SMILES1']),
+    formula: extractField(['Formula', 'ChemicalFormula']),
+    iupac: extractField(['IUPACName', 'IUPAC_name', 'PIN', 'SystematicName'])
+  };
+}
+
+// Clean wiki/HTML markup commonly found in chembox fields:
+//   - <ref>...</ref> tags
+//   - {{...}} templates (replaced with their first arg)
+//   - [[link|text]] → text, [[link]] → link
+//   - HTML entities like &nbsp; → space
+function cleanWikitext(s) {
+  return s
+    .replace(/<ref[^>]*>.*?<\/ref>/gi, '')   // remove ref tags
+    .replace(/<ref[^/]*\/>/gi, '')           // self-closing refs
+    .replace(/<[^>]+>/g, '')                 // any other HTML tags
+    .replace(/\{\{[^|}]*\|([^}]+)\}\}/g, '$1') // {{template|content}} → content
+    .replace(/\{\{[^}]+\}\}/g, '')           // remaining templates
+    .replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, '$2') // [[link|text]] → text
+    .replace(/\[\[([^\]]+)\]\]/g, '$1')      // [[link]] → link
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .trim();
+}
+
+async function fetchWithTimeout(url, ms) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+// Hide IUPAC verification flag once user edits the field
+document.getElementById('iupac').addEventListener('input', () => {
+  document.getElementById('iupac-status').style.display = 'none';
+});
+
+// =====================================================================
+// SMILES VALIDATION
+// =====================================================================
+
+function validateSmiles() {
+  const smiles = document.getElementById('smiles').value.trim();
+  const statusEl = document.getElementById('smiles-status');
+  if (!smiles) {
+    statusEl.className = 'parse-status empty';
+    statusEl.textContent = 'no structure yet';
+    return;
+  }
+  if (!RDKitModule) {
+    statusEl.className = 'parse-status empty';
+    statusEl.textContent = 'SMILES entered (validation pending RDKit load)';
+    return;
+  }
+  try {
+    const mol = RDKitModule.get_mol(smiles);
+    if (!mol || !mol.is_valid()) {
+      statusEl.className = 'parse-status err';
+      statusEl.textContent = 'invalid SMILES';
+      if (mol) mol.delete();
+      return;
+    }
+    const canonical = mol.get_smiles();
+    statusEl.className = 'parse-status ok';
+    statusEl.textContent = `valid · canonical: ${canonical}`;
+    mol.delete();
+  } catch (e) {
+    statusEl.className = 'parse-status err';
+    statusEl.textContent = `error: ${e.message}`;
+  }
+}
+
+document.getElementById('smiles').addEventListener('input', validateSmiles);
+
+// =====================================================================
+// SPECTRAL PARSERS
+// =====================================================================
+
+// MULTIPLICITY: peak count → name
+const MULTIPLICITY_NAMES = {
+  1: 's', 2: 'd', 3: 't', 4: 'q', 5: 'p', 6: 'sex', 7: 'sept'
+};
+
+// Pascal's triangle for multiplet pattern validation
+const PASCAL_TRIANGLES = {
+  1: [1], 2: [1, 1], 3: [1, 2, 1], 4: [1, 3, 3, 1],
+  5: [1, 4, 6, 4, 1], 6: [1, 5, 10, 10, 5, 1], 7: [1, 6, 15, 20, 15, 6, 1]
+};
+
+function validateMultipletPattern(group) {
+  const n = group.length;
+  if (n === 1) return true;
+  const expected = PASCAL_TRIANGLES[n];
+  if (!expected) return true;
+  const intensities = group.map(p => p.intensity);
+  const maxObs = Math.max(...intensities);
+  const maxExp = Math.max(...expected);
+  const obs = intensities.map(i => i / maxObs);
+  const exp = expected.map(e => e / maxExp);
+  for (let i = 0; i < n; i++) {
+    if (Math.abs(obs[i] - exp[i]) > 0.4) return false;
+  }
+  return true;
+}
+
+// 1H NMR: parse SDBS raw peak list (Hz, ppm, intensity) and group into multiplets.
+// Returns: { signals: [{shift, multiplicity, j_hz, intensity}], errors: [] }
+function parseHNMR(text) {
+  if (!text.trim()) return { signals: [], errors: ['empty'] };
+  const errors = [];
+  const signals = [];
+
+  const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const rawPeaks = [];
+  for (const line of lines) {
+    if (!/^\d/.test(line)) continue;
+    const m = line.match(/^(\d+\.?\d*)[\s\t]+(\d+\.?\d*)[\s\t]+(\d+\.?\d*)$/);
+    if (m) {
+      rawPeaks.push({
+        hz: parseFloat(m[1]),
+        ppm: parseFloat(m[2]),
+        intensity: parseFloat(m[3])
+      });
+    }
+  }
+
+  if (rawPeaks.length === 0) {
+    errors.push('no peaks parsed');
+    return { signals, errors };
+  }
+
+  // Sort by Hz ascending for multiplet grouping
+  rawPeaks.sort((a, b) => a.hz - b.hz);
+
+  // Merge raw peaks within 1 Hz of each other. SDBS data sometimes lists what
+  // appears to be a single peak as two very close lines (e.g., 991.46 / 991.09).
+  // Real NMR peaks are typically 0.5-2 Hz wide, so peaks <1 Hz apart almost
+  // always represent a single multiplet member that the picker double-counted.
+  // Without merging, the parser would see 8 peaks in a quartet (each line of the
+  // quartet has a "twin") and misidentify multiplicity and J.
+  const PEAK_MERGE_THRESHOLD_HZ = 1.0;
+  const merged = [rawPeaks[0]];
+  for (let i = 1; i < rawPeaks.length; i++) {
+    const last = merged[merged.length - 1];
+    if (rawPeaks[i].hz - last.hz < PEAK_MERGE_THRESHOLD_HZ) {
+      // Merge: keep the more intense peak's position, sum the intensities
+      if (rawPeaks[i].intensity > last.intensity) {
+        last.hz = rawPeaks[i].hz;
+        last.ppm = rawPeaks[i].ppm;
+      }
+      last.intensity += rawPeaks[i].intensity;
+    } else {
+      merged.push(rawPeaks[i]);
+    }
+  }
+  const dedupedPeaks = merged;
+
+  const MULTIPLET_GAP_HZ = 25;
+  const groups = [];
+  let currentGroup = [dedupedPeaks[0]];
+  for (let i = 1; i < dedupedPeaks.length; i++) {
+    const gap = dedupedPeaks[i].hz - dedupedPeaks[i - 1].hz;
+    if (gap <= MULTIPLET_GAP_HZ) {
+      currentGroup.push(dedupedPeaks[i]);
+    } else {
+      groups.push(currentGroup);
+      currentGroup = [dedupedPeaks[i]];
+    }
+  }
+  groups.push(currentGroup);
+
+  // dd-spacing detection: a true dd has 4 peaks with spacing pattern X, Y, X
+  // (outer spacings equal, middle differs). The splitter would otherwise see
+  // the larger of these spacings as "anomalous" and incorrectly split the dd
+  // into two separate doublets. Tag matching groups to bypass the splitter;
+  // the multiplicity assignment stage will then correctly identify them as dd.
+  for (const group of groups) {
+    if (group.length !== 4) continue;
+    if (group._aaBB) continue;
+    const s1 = group[1].hz - group[0].hz;
+    const s2 = group[2].hz - group[1].hz;
+    const s3 = group[3].hz - group[2].hz;
+    // Outer spacings must match (within 0.5 Hz tolerance), and middle must differ.
+    const outerMatch = Math.abs(s1 - s3) < 0.5;
+    const middleDiffers = Math.abs(s1 - s2) > 0.5 && Math.abs(s2 - s3) > 0.5;
+    // Also require that all spacings are at least 0.5 Hz (avoid tagging
+    // noisy near-coincident peaks).
+    if (s1 < 0.5 || s2 < 0.5 || s3 < 0.5) continue;
+    if (!outerMatch || !middleDiffers) continue;
+    // Intensity check: a true dd is 1:1:1:1, while a quartet is 1:3:3:1.
+    // Belt-and-suspenders alongside the spacing check.
+    const ints = group.map(p => p.intensity);
+    const maxInt = Math.max(...ints);
+    const outerAvg = (ints[0] + ints[3]) / (2 * maxInt);
+    const innerAvg = (ints[1] + ints[2]) / (2 * maxInt);
+    if (outerAvg / innerAvg < 0.7) continue; // looks more like a quartet
+    group._ddCandidate = true;
+  }
+
+  // AA'BB' detection: para-disubstituted benzenes with different substituents
+  // produce 6-line patterns with a characteristic intensity signature (small-big-medium-medium-big-small,
+  // roughly symmetric, with the inner pair clearly larger than the middle pair).
+  // This pattern is reported in literature as a simple doublet, so we tag these
+  // groups to bypass the splitter and shoulder filter, and assign multiplicity = 'd'
+  // using the spacing between the two largest peaks.
+  for (const group of groups) {
+    if (group.length !== 6) continue;
+    const ints = group.map(p => p.intensity);
+    const [o1, i1, m1, m2, i2, o2] = ints;
+    // Symmetry check: each pair within ~30% of each other
+    const pairOk = (a, b) => Math.min(a, b) / Math.max(a, b) > 0.7;
+    if (!pairOk(o1, o2) || !pairOk(i1, i2) || !pairOk(m1, m2)) continue;
+    // Inner pair largest, outer pair smallest
+    const innerAvg = (i1 + i2) / 2;
+    const outerAvg = (o1 + o2) / 2;
+    const middleAvg = (m1 + m2) / 2;
+    if (innerAvg <= middleAvg || middleAvg <= outerAvg) continue;
+    // Middle/inner ratio < 0.5 rules out true sextets (which have ratio ~1.0)
+    if (middleAvg / innerAvg >= 0.5) continue;
+    // All checks pass: mark as AA'BB' apparent doublet
+    group._aaBB = true;
+    group._apparentJ = Math.round((group[4].hz - group[1].hz) * 10) / 10;
+  }
+
+  // Sanity-check each group: within a real multiplet, all J spacings should be
+  // roughly equal. If one gap stands out as much larger than the median gap,
+  // it's likely that we accidentally grouped two adjacent signals (e.g., a
+  // singlet next to a quartet on a low-field-strength spectrometer where Hz
+  // differences are smaller than the default 25 Hz threshold). Split at the
+  // largest anomalous gap.
+  //
+  // Threshold: a gap is "anomalous" if it's > 1.7x the median gap AND > 3 Hz
+  // absolute. The 1.7x factor catches the singlet-next-to-quartet case (where
+  // the anomalous gap is ~2.4x median) while leaving legitimate uniform
+  // multiplets (where all gaps are within ~10% of each other) intact.
+  const splitGroups = [];
+  for (const group of groups) {
+    if (group._aaBB || group._ddCandidate || group.length < 3) {
+      splitGroups.push(group);
+      continue;
+    }
+    const gaps = [];
+    for (let i = 1; i < group.length; i++) {
+      gaps.push(group[i].hz - group[i - 1].hz);
+    }
+    const sortedGaps = [...gaps].sort((a, b) => a - b);
+    const medianGap = sortedGaps[Math.floor(sortedGaps.length / 2)];
+    // Find the largest anomalous gap
+    let splitIndex = -1;
+    let maxRatio = 1.7;
+    for (let i = 0; i < gaps.length; i++) {
+      const ratio = gaps[i] / medianGap;
+      if (gaps[i] > 3 && ratio > maxRatio) {
+        maxRatio = ratio;
+        splitIndex = i;
+      }
+    }
+    if (splitIndex === -1) {
+      splitGroups.push(group);
+    } else {
+      // Recursively split: a group could have multiple anomalies (rare but possible)
+      const left = group.slice(0, splitIndex + 1);
+      const right = group.slice(splitIndex + 1);
+      // Re-feed each half through the same logic by adding them to a queue
+      // For simplicity, just split once here; if multi-split is needed we can iterate
+      splitGroups.push(left, right);
+    }
+  }
+
+  for (const group of splitGroups) {
+    // AA'BB' groups bypass the shoulder filter so all 6 peaks contribute to
+    // the integration/intensity sum; multiplicity is set directly from the tag.
+    const isAaBB = group._aaBB === true;
+
+    let cleaned;
+    if (isAaBB) {
+      cleaned = group;
+    } else {
+      // Pascal-aware shoulder filter: if the full group already matches the
+      // Pascal pattern for its length (e.g., a true septet with the 1:6:... outer
+      // peaks intact), keep all peaks. Otherwise progressively drop the smallest
+      // outer peaks and re-check; this lets us trim genuine shoulder artifacts
+      // (triplet-with-shoulders → triplet) without discarding legitimate Pascal-
+      // pattern outer lines.
+      cleaned = group;
+      if (group.length >= 2) {
+        // If full group already matches Pascal, keep it.
+        if (validateMultipletPattern(group)) {
+          // keep cleaned = group
+        } else {
+          // Try trimming from each end (outer peaks are the smallest) and see
+          // if a smaller subset matches Pascal.
+          let trimmed = group.slice();
+          while (trimmed.length >= 2) {
+            // Identify the outer peak (left or right) with lower intensity
+            const left = trimmed[0].intensity;
+            const right = trimmed[trimmed.length - 1].intensity;
+            // Only trim if the outer peak is below 15% of group max
+            const trimmedMax = Math.max(...trimmed.map(p => p.intensity));
+            const SHOULDER_THRESHOLD = 0.15;
+            const leftIsShoulder = left < trimmedMax * SHOULDER_THRESHOLD;
+            const rightIsShoulder = right < trimmedMax * SHOULDER_THRESHOLD;
+            if (!leftIsShoulder && !rightIsShoulder) break;
+            // Drop the smaller of the two if both are shoulders, else drop the one that is
+            if (leftIsShoulder && rightIsShoulder) {
+              if (left <= right) trimmed = trimmed.slice(1);
+              else trimmed = trimmed.slice(0, -1);
+            } else if (leftIsShoulder) {
+              trimmed = trimmed.slice(1);
+            } else {
+              trimmed = trimmed.slice(0, -1);
+            }
+            if (validateMultipletPattern(trimmed)) {
+              cleaned = trimmed;
+              break;
+            }
+          }
+          // If we never found a clean Pascal match, fall back to whatever
+          // remained after trimming all shoulders (which matches the old behavior).
+          if (cleaned === group && trimmed.length < group.length) {
+            cleaned = trimmed;
+          }
+        }
+      }
+    }
+
+    const n = cleaned.length;
+    let totalIntensity = 0;
+    let weightedPpm = 0;
+    for (const p of cleaned) {
+      totalIntensity += p.intensity;
+      weightedPpm += p.ppm * p.intensity;
+    }
+    const shift = Math.round((weightedPpm / totalIntensity) * 1000) / 1000;
+
+    const sig = { shift, intensity: Math.round(totalIntensity) };
+
+    // AA'BB' apparent-doublet handling: assign 'd' with J from the two largest peaks
+    if (isAaBB) {
+      sig.multiplicity = 'd';
+      sig.j_hz = [group._apparentJ];
+      errors.push(`AA'BB' pattern at ${shift} ppm: reported as apparent doublet (J = ${group._apparentJ} Hz). True system has additional small couplings (meta, para); details omitted.`);
+      signals.push(sig);
+      continue;
+    }
+
+    // For 4-line patterns, distinguish a true quartet (1:3:3:1 with equal spacing)
+    // from a dd (1:1:1:1 with two distinct spacings).
+    let detectedAsDd = false;
+    if (n === 4) {
+      const intensities = cleaned.map(p => p.intensity);
+      const maxInt = Math.max(...intensities);
+      const normInt = intensities.map(i => i / maxInt);
+      // Quartet shape: outer lines should be ~1/3 of inner lines (1:3:3:1 normalized = 0.33:1:1:0.33)
+      // dd shape: all four lines roughly equal (~1:1:1:1, all close to 1.0)
+      // Use the outer/inner ratio as the diagnostic. <0.55 suggests quartet, >0.7 suggests dd.
+      const outerAvg = (normInt[0] + normInt[3]) / 2;
+      const innerAvg = (normInt[1] + normInt[2]) / 2;
+      const outerInnerRatio = outerAvg / innerAvg;
+
+      const spacings = [
+        cleaned[1].hz - cleaned[0].hz,
+        cleaned[2].hz - cleaned[1].hz,
+        cleaned[3].hz - cleaned[2].hz
+      ];
+      // For a dd, outer spacings (1-2 and 3-4) should be equal, and the middle (2-3) is different.
+      // Specifically: spacings[0] ≈ spacings[2], and these differ from spacings[1].
+      const outerSpacingMatch = Math.abs(spacings[0] - spacings[2]) < 0.5; // Hz tolerance
+      const middleDiffers = Math.abs(spacings[0] - spacings[1]) > 0.5;
+
+      if (outerInnerRatio > 0.7 && outerSpacingMatch && middleDiffers) {
+        // It's a dd. Extract both J values.
+        // For a dd, the four lines are at positions: 0, J2, J1, J1+J2 (assuming J1 > J2)
+        // So spacings are: J2, J1-J2, J2. Outer spacing = J2, middle spacing = J1-J2.
+        // Therefore: J2 = outer spacing, J1 = middle spacing + J2.
+        const J2 = (spacings[0] + spacings[2]) / 2;
+        const J1 = spacings[1] + J2;
+        sig.multiplicity = 'dd';
+        sig.j_hz = [
+          Math.round(Math.max(J1, J2) * 10) / 10,
+          Math.round(Math.min(J1, J2) * 10) / 10
+        ];
+        detectedAsDd = true;
+      }
+    }
+
+    if (!detectedAsDd) {
+      sig.multiplicity = MULTIPLICITY_NAMES[n] || 'm';
+      if (n >= 2) {
+        let totalSpacing = 0;
+        for (let i = 1; i < cleaned.length; i++) {
+          totalSpacing += Math.abs(cleaned[i].hz - cleaned[i - 1].hz);
+        }
+        sig.j_hz = [Math.round((totalSpacing / (n - 1)) * 10) / 10];
+      }
+    }
+
+    // Skip Pascal validation for dd (since 1:1:1:1 isn't a Pascal pattern)
+    if (!detectedAsDd && n >= 2 && n <= 7 && !validateMultipletPattern(cleaned)) {
+      errors.push(`Suspicious ${sig.multiplicity} at ${shift} ppm: intensities don't match Pascal pattern`);
+    }
+
+    // Flag if we filtered out peaks, so the user knows
+    if (cleaned.length < group.length) {
+      const dropped = group.length - cleaned.length;
+      errors.push(`Multiplet at ${shift} ppm: dropped ${dropped} shoulder peak(s) below 15% intensity threshold`);
+    }
+
+    signals.push(sig);
+  }
+
+  signals.sort((a, b) => b.shift - a.shift);
+  return { signals, errors };
+}
+
+// 13C NMR: parse SDBS tab-separated (ppm, intensity, optional SDBS assignment number)
+function parseCNMR(text) {
+  if (!text.trim()) return { signals: [], errors: ['empty'] };
+  const signals = [];
+  const errors = [];
+
+  const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+  for (const line of lines) {
+    if (!/^\d/.test(line)) continue;
+    const m = line.match(/^(\d+\.?\d*)[\s\t]+(\d+\.?\d*)(?:[\s\t]+(\S+))?/);
+    if (m) {
+      const shift = parseFloat(m[1]);
+      const intensity = parseFloat(m[2]);
+      if (isNaN(shift)) continue;
+      if (shift < 0 || shift > 250) errors.push(`Unusual 13C shift: ${shift} ppm`);
+      const sig = { shift, intensity };
+      // Capture SDBS assignment number (e.g., "1", "2") if present.
+      // Stored separately as sdbs_assignment for context display in the UI,
+      // not for the final JSON output.
+      if (m[3] && /^\d+$/.test(m[3])) {
+        sig.sdbs_assignment = m[3];
+      }
+      signals.push(sig);
+    }
+  }
+
+  signals.sort((a, b) => b.shift - a.shift);
+  return { signals, errors };
+}
+
+// IR: classify peak intensity from %transmittance (lower T = stronger absorption)
+function classifyIRIntensity(T) {
+  if (T < 20) return 'strong';
+  if (T < 50) return 'medium';
+  if (T < 80) return 'weak';
+  return 'very weak';
+}
+
+// =======================================================================
+// IR REFERENCE DATA (sourced from Pavia, Lampman, Kriz, 3rd ed.)
+// =======================================================================
+// Full correlation table used for both the combobox dropdown and the
+// reference sidebar. Each entry has a wavenumber range, label, structural
+// gating function, and a specificity score (0=general, 4=very specific).
+//
+// Auto-population picks the lowest-specificity match for a wavenumber.
+// The combobox dropdown shows ALL matches sorted most-specific-first.
+
+const IR_REF_CATEGORIES = [
+  { id: 'alkane',     label: 'Alkane / Alkyl' },
+  { id: 'alkene',     label: 'Alkene' },
+  { id: 'alkyne',     label: 'Alkyne' },
+  { id: 'aromatic',   label: 'Aromatic' },
+  { id: 'alcohol',    label: 'Alcohol' },
+  { id: 'ether',      label: 'Ether / Epoxide' },
+  { id: 'aldehyde',   label: 'Aldehyde' },
+  { id: 'ketone',     label: 'Ketone' },
+  { id: 'acid',       label: 'Carboxylic Acid' },
+  { id: 'ester',      label: 'Ester' },
+  { id: 'anhydride',  label: 'Anhydride' },
+  { id: 'acyl_cl',    label: 'Acid Chloride' },
+  { id: 'amine',      label: 'Amine' },
+  { id: 'amide',      label: 'Amide' },
+  { id: 'nitrile',    label: 'Nitrile' },
+  { id: 'nitro',      label: 'Nitro' },
+  { id: 'imine',      label: 'Imine / Oxime' },
+  { id: 'halide',     label: 'Halide (C-X)' },
+  { id: 'carbonyl',   label: 'Carbonyl (general)' },
+  { id: 'sulfur',     label: 'Sulfur' },
+  { id: 'phosphorus', label: 'Phosphorus' },
+  { id: 'cumulated',  label: 'Cumulated (C=C=C, etc.)' },
+];
+
+const _hasHalogen = c => c.Cl > 0 || c.Br > 0 || c.F > 0 || c.I > 0;
+
+const IR_REFERENCE_TABLE = [
+  // ---- C-H Alkane ----
+  { bond:'C-H', fg:'alkane', vib:'stretch', range:[2840,3000], int:'s', cat:'alkane', specificity:1,
+    label:'C-H stretch (alkane, sp³)' },
+  { bond:'C-H', fg:'alkane, methyl', vib:'bend', range:[1445,1455], int:'m', cat:'alkane', specificity:2,
+    label:'C-H bend (methyl)', requires: c => c.C >= 1 },
+  { bond:'C-H', fg:'alkane, methyl', vib:'bend', range:[1370,1380], int:'m', cat:'alkane', specificity:2,
+    label:'C-H bend (methyl, symmetric)', requires: c => c.C >= 1 },
+  { bond:'C-H', fg:'alkane, methylene', vib:'bend', range:[1460,1465], int:'m', cat:'alkane', specificity:2,
+    label:'C-H bend (methylene, CH₂)', requires: c => c.C >= 2 },
+  { bond:'C-H', fg:'alkane, methylene, long chain', vib:'rock', range:[715,725], int:'w', cat:'alkane', specificity:3,
+    label:'CH₂ rock (long chain)', requires: c => c.C >= 4 },
+
+  // ---- C-H Alkene ----
+  { bond:'C-H', fg:'alkene', vib:'stretch', range:[3000,3100], int:'m', cat:'alkene', specificity:1,
+    label:'=C-H stretch (alkene, sp²)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene', vib:'oop', range:[650,1000], int:'s', cat:'alkene', specificity:1,
+    label:'=C-H out-of-plane bend (alkene)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene, vinyl', vib:'bend', range:[1410,1420], int:'m-w', cat:'alkene', specificity:2,
+    label:'=C-H bend (vinyl or vinylidene)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene, vinyl (monosub.)', vib:'oop', range:[985,995], int:'s', cat:'alkene', specificity:3,
+    label:'=C-H oop (vinyl, monosubstituted)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene, vinyl (monosub.)', vib:'oop', range:[810,960], int:'s', cat:'alkene', specificity:3,
+    label:'=C-H oop (vinyl, monosubstituted)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene, vinyl (monosub.)', vib:'overtone', range:[1815,1825], int:'w', cat:'alkene', specificity:3,
+    label:'=C-H overtone (vinyl, monosubstituted)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene, vinylidene', vib:'oop', range:[790,940], int:'s', cat:'alkene', specificity:3,
+    label:'=C-H oop (vinylidene, gem-disubstituted)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene, cis disub.', vib:'oop', range:[650,750], int:'s', cat:'alkene', specificity:3,
+    label:'=C-H oop (cis disubstituted)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene, trans disub.', vib:'oop', range:[965,975], int:'m', cat:'alkene', specificity:3,
+    label:'=C-H oop (trans disubstituted)', requires: c => c.ihd >= 1 },
+  { bond:'C-H', fg:'alkene, trisub.', vib:'oop', range:[790,840], int:'m', cat:'alkene', specificity:3,
+    label:'=C-H oop (trisubstituted)', requires: c => c.ihd >= 1 },
+
+  // ---- C-H Aromatic ----
+  { bond:'C-H', fg:'aromatic', vib:'stretch', range:[3000,3150], int:'s', cat:'aromatic', specificity:1,
+    label:'aromatic C-H stretch', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic', vib:'bend', range:[1000,1300], int:'', cat:'aromatic', specificity:1,
+    label:'aromatic C-H in-plane bend', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic', vib:'oop', range:[720,900], int:'s', cat:'aromatic', specificity:1,
+    label:'aromatic C-H oop bend', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic, monosub.', vib:'oop', range:[745,755], int:'s', cat:'aromatic', specificity:3,
+    label:'aromatic C-H oop (monosubstituted, ~750)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic, monosub.', vib:'oop', range:[685,695], int:'s', cat:'aromatic', specificity:3,
+    label:'aromatic C-H oop (monosubstituted, ~690)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic, ortho', vib:'oop', range:[745,755], int:'s', cat:'aromatic', specificity:3,
+    label:'aromatic C-H oop (ortho disubstituted)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic, meta', vib:'oop', range:[875,885], int:'s-m', cat:'aromatic', specificity:3,
+    label:'aromatic C-H oop (meta, ~880)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic, meta', vib:'oop', range:[775,785], int:'s-m', cat:'aromatic', specificity:3,
+    label:'aromatic C-H oop (meta, ~780)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic, meta', vib:'oop', range:[685,695], int:'s-m', cat:'aromatic', specificity:3,
+    label:'aromatic C-H oop (meta, ~690)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C-H', fg:'aromatic, para', vib:'oop', range:[800,850], int:'s', cat:'aromatic', specificity:3,
+    label:'aromatic C-H oop (para disubstituted)', requires: c => c.ihd >= 4 && c.C >= 6 },
+
+  // ---- C-H Alkyne ----
+  { bond:'C-H', fg:'alkyne', vib:'stretch', range:[3295,3305], int:'s', cat:'alkyne', specificity:2,
+    label:'≡C-H stretch (terminal alkyne)', requires: c => c.ihd >= 2 },
+  { bond:'C-H', fg:'alkyne', vib:'bend', range:[600,700], int:'s,b', cat:'alkyne', specificity:2,
+    label:'≡C-H bend (alkyne)', requires: c => c.ihd >= 2 },
+
+  // ---- C-H Aldehyde ----
+  { bond:'C-H', fg:'aldehyde', vib:'stretch', range:[2800,2860], int:'w', cat:'aldehyde', specificity:3,
+    label:'aldehyde C-H stretch (Fermi doublet, higher)', requires: c => c.O > 0 && c.ihd >= 1 },
+  { bond:'C-H', fg:'aldehyde', vib:'stretch', range:[2700,2760], int:'w', cat:'aldehyde', specificity:3,
+    label:'aldehyde C-H stretch (Fermi doublet, lower)', requires: c => c.O > 0 && c.ihd >= 1 },
+  { bond:'C-H', fg:'aldehyde', vib:'bend', range:[1350,1400], int:'', cat:'aldehyde', specificity:2,
+    label:'aldehyde C-H bend', requires: c => c.O > 0 && c.ihd >= 1 },
+
+  // ---- C-C ----
+  { bond:'C-C', fg:'alkane', vib:'stretch', range:[800,1200], int:'w', cat:'alkane', specificity:0,
+    label:'C-C stretch (alkane)' },
+  { bond:'C-C', fg:'aryl-carbonyl', vib:'stretch', range:[800,900], int:'s,b', cat:'aromatic', specificity:2,
+    label:'aryl-carbonyl C-C stretch', requires: c => c.ihd >= 4 && c.O > 0 },
+
+  // ---- C=C ----
+  { bond:'C=C', fg:'alkene, unconj.', vib:'stretch', range:[1640,1680], int:'m-w', cat:'alkene', specificity:2,
+    label:'C=C stretch (alkene, unconjugated)', requires: c => c.ihd >= 1 },
+  { bond:'C=C', fg:'alkene, conj.', vib:'stretch', range:[1600,1650], int:'m', cat:'alkene', specificity:2,
+    label:'C=C stretch (alkene, conjugated)', requires: c => c.ihd >= 2 },
+  { bond:'C=C', fg:'cycloalkene', vib:'stretch', range:[1565,1680], int:'m-w', cat:'alkene', specificity:2,
+    label:'C=C stretch (cycloalkene)', requires: c => c.ihd >= 1 },
+  { bond:'C=C', fg:'cyclopropene, sub.', vib:'stretch', range:[1780,1885], int:'m-w', cat:'alkene', specificity:3,
+    label:'C=C stretch (substituted cyclopropene)', requires: c => c.ihd >= 2 },
+
+  // ---- C≡C ----
+  { bond:'C≡C', fg:'alkyne', vib:'stretch', range:[2100,2260], int:'m-w', cat:'alkyne', specificity:2,
+    label:'C≡C stretch (alkyne)', requires: c => c.ihd >= 2 },
+
+  // ---- Aromatic C=C ----
+  { bond:'C=C', fg:'aromatic', vib:'stretch', range:[1595,1605], int:'m-w', cat:'aromatic', specificity:2,
+    label:'aromatic C=C stretch (~1600)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C=C', fg:'aromatic', vib:'stretch', range:[1575,1585], int:'m-w', cat:'aromatic', specificity:2,
+    label:'aromatic C=C stretch (~1580)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C=C', fg:'aromatic', vib:'stretch', range:[1495,1505], int:'m-w', cat:'aromatic', specificity:2,
+    label:'aromatic C=C stretch (~1500)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C=C', fg:'aromatic', vib:'stretch', range:[1445,1455], int:'m-w', cat:'aromatic', specificity:2,
+    label:'aromatic C=C stretch (~1450)', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C=C', fg:'aromatic', vib:'oop', range:[650,910], int:'s-m', cat:'aromatic', specificity:1,
+    label:'aromatic C=C oop bend', requires: c => c.ihd >= 4 && c.C >= 6 },
+  { bond:'C=C', fg:'aromatic', vib:'overtone', range:[1650,2000], int:'w', cat:'aromatic', specificity:1,
+    label:'aromatic overtone bands (weak)', requires: c => c.ihd >= 4 && c.C >= 6 },
+
+  // ---- Halides ----
+  { bond:'C-F', fg:'alkyl fluoride', vib:'stretch', range:[1000,1400], int:'s', cat:'halide', specificity:2,
+    label:'C-F stretch (alkyl fluoride)', requires: c => c.F > 0 },
+  { bond:'C-F', fg:'aryl fluoride', vib:'stretch', range:[1100,1250], int:'s', cat:'halide', specificity:2,
+    label:'C-F stretch (aryl fluoride)', requires: c => c.F > 0 && c.ihd >= 4 },
+  { bond:'C-Cl', fg:'alkyl chloride', vib:'stretch', range:[540,850], int:'s', cat:'halide', specificity:2,
+    label:'C-Cl stretch (alkyl chloride)', requires: c => c.Cl > 0 },
+  { bond:'C-Cl', fg:'aryl chloride', vib:'stretch', range:[1030,1100], int:'s', cat:'halide', specificity:2,
+    label:'C-Cl stretch (aryl chloride)', requires: c => c.Cl > 0 && c.ihd >= 4 },
+  { bond:'C-Cl', fg:'acid chloride', vib:'stretch', range:[550,730], int:'s-m', cat:'acyl_cl', specificity:2,
+    label:'C-Cl stretch (acid chloride)', requires: c => c.Cl > 0 && c.O > 0 },
+  { bond:'C-H', fg:'alkyl chloride', vib:'wag', range:[1230,1300], int:'', cat:'halide', specificity:2,
+    label:'C-H wag (alkyl chloride)', requires: c => c.Cl > 0 },
+  { bond:'C-Br', fg:'alkyl bromide', vib:'stretch', range:[510,690], int:'s', cat:'halide', specificity:2,
+    label:'C-Br stretch (alkyl bromide)', requires: c => c.Br > 0 },
+  { bond:'C-Br', fg:'aryl bromide', vib:'stretch', range:[1030,1075], int:'s', cat:'halide', specificity:2,
+    label:'C-Br stretch (aryl bromide)', requires: c => c.Br > 0 && c.ihd >= 4 },
+  { bond:'C-H', fg:'alkyl bromide', vib:'wag', range:[1190,1250], int:'', cat:'halide', specificity:2,
+    label:'C-H wag (alkyl bromide)', requires: c => c.Br > 0 },
+  { bond:'C-I', fg:'alkyl iodide', vib:'stretch', range:[485,600], int:'s', cat:'halide', specificity:2,
+    label:'C-I stretch (alkyl iodide)', requires: c => c.I > 0 },
+  { bond:'C-H', fg:'alkyl iodide', vib:'wag', range:[1150,1200], int:'', cat:'halide', specificity:2,
+    label:'C-H wag (alkyl iodide)', requires: c => c.I > 0 },
+
+  // ---- O-H ----
+  { bond:'O-H', fg:'alcohol', vib:'stretch', range:[3200,3500], int:'s,b', cat:'alcohol', specificity:1,
+    label:'O-H stretch (alcohol, H-bonded, broad)', requires: c => c.O > 0 },
+  { bond:'O-H', fg:'alcohol, free', vib:'stretch', range:[3600,3650], int:'w', cat:'alcohol', specificity:2,
+    label:'O-H stretch (alcohol, free/dilute, sharp)', requires: c => c.O > 0 },
+  { bond:'C-O-H', fg:'alcohol', vib:'bend', range:[1220,1440], int:'w,b', cat:'alcohol', specificity:1,
+    label:'C-O-H bend (alcohol)', requires: c => c.O > 0 },
+  { bond:'O-H', fg:'carboxylic acid', vib:'stretch', range:[2400,3400], int:'m,b', cat:'acid', specificity:1,
+    label:'O-H stretch (carboxylic acid, very broad)', requires: c => c.O >= 2 && c.ihd >= 1 },
+  { bond:'O-H', fg:'carboxylic acid', vib:'bend', range:[1415,1425], int:'', cat:'acid', specificity:2,
+    label:'O-H bend (carboxylic acid)', requires: c => c.O >= 2 && c.ihd >= 1 },
+  { bond:'O-H', fg:'carboxylic acid', vib:'bend', range:[920,940], int:'m-w,b', cat:'acid', specificity:2,
+    label:'O-H bend (carboxylic acid, broad ~930)', requires: c => c.O >= 2 && c.ihd >= 1 },
+
+  // ---- C-O ----
+  { bond:'C-O', fg:'alcohol', vib:'stretch', range:[1000,1260], int:'s', cat:'alcohol', specificity:1,
+    label:'C-O stretch (alcohol)', requires: c => c.O > 0 },
+  { bond:'C-O', fg:'carboxylic acid', vib:'stretch', range:[1210,1320], int:'m', cat:'acid', specificity:2,
+    label:'C-O stretch (carboxylic acid)', requires: c => c.O >= 2 && c.ihd >= 1 },
+  { bond:'C-O', fg:'ether', vib:'stretch', range:[1000,1300], int:'s', cat:'ether', specificity:1,
+    label:'C-O stretch (ether)', requires: c => c.O > 0 },
+  { bond:'C-O', fg:'epoxide', vib:'stretch', range:[750,950], int:'s', cat:'ether', specificity:2,
+    label:'C-O stretch (epoxide, ring breathing)', requires: c => c.O > 0 && c.ihd >= 1 },
+  { bond:'C-O', fg:'ester', vib:'stretch', range:[1000,1300], int:'s,b', cat:'ester', specificity:2,
+    label:'C-O stretch (ester)', requires: c => c.O >= 2 && c.ihd >= 1 },
+
+  // ---- C=O ----
+  { bond:'C=O', fg:'carbonyl (general)', vib:'stretch', range:[1650,1850], int:'s', cat:'carbonyl', specificity:0,
+    label:'C=O stretch (carbonyl)', requires: c => c.O > 0 && c.ihd >= 1 },
+  { bond:'C=O', fg:'aldehyde', vib:'stretch', range:[1720,1740], int:'s', cat:'aldehyde', specificity:3,
+    label:'C=O stretch (aldehyde)', requires: c => c.O > 0 && c.ihd >= 1 },
+  { bond:'C=O', fg:'aldehyde, conj.', vib:'stretch', range:[1660,1710], int:'s', cat:'aldehyde', specificity:4,
+    label:'C=O stretch (aldehyde, conjugated)', requires: c => c.O > 0 && c.ihd >= 2 },
+  { bond:'C=O', fg:'ketone', vib:'stretch', range:[1695,1730], int:'s', cat:'ketone', specificity:3,
+    label:'C=O stretch (ketone)', requires: c => c.O > 0 && c.ihd >= 1 },
+  { bond:'C=O', fg:'ketone, conj.', vib:'stretch', range:[1665,1700], int:'s', cat:'ketone', specificity:4,
+    label:'C=O stretch (ketone, conjugated)', requires: c => c.O > 0 && c.ihd >= 2 },
+  { bond:'C=O', fg:'ketone, aromatic (one ring)', vib:'stretch', range:[1680,1700], int:'s', cat:'ketone', specificity:4,
+    label:'C=O stretch (aryl ketone, one ring)', requires: c => c.O > 0 && c.ihd >= 5 && c.C >= 6 },
+  { bond:'C=O', fg:'ketone, aromatic (two rings)', vib:'stretch', range:[1600,1680], int:'s', cat:'ketone', specificity:4,
+    label:'C=O stretch (diaryl ketone)', requires: c => c.O > 0 && c.ihd >= 9 && c.C >= 12 },
+  { bond:'C=O', fg:'ketone, enolic', vib:'stretch', range:[1600,1650], int:'s,b', cat:'ketone', specificity:4,
+    label:'C=O stretch (beta-diketone, enolic)', requires: c => c.O >= 2 && c.ihd >= 2 },
+  { bond:'C=O', fg:'ketone, cyclic', vib:'stretch', range:[1700,1780], int:'s', cat:'ketone', specificity:3,
+    label:'C=O stretch (cyclic ketone)', requires: c => c.O > 0 && c.ihd >= 2 },
+  { bond:'C=O', fg:'ketone, alpha-halo', vib:'stretch', range:[1730,1785], int:'s', cat:'ketone', specificity:4,
+    label:'C=O stretch (alpha-haloketone)', requires: c => c.O > 0 && c.ihd >= 1 && _hasHalogen(c) },
+  { bond:'C-C-C', fg:'ketone', vib:'bend', range:[1100,1300], int:'m', cat:'ketone', specificity:2,
+    label:'C-C(=O)-C bend (ketone)', requires: c => c.O > 0 && c.ihd >= 1 },
+  { bond:'C-H', fg:'ketone, methyl', vib:'bend', range:[1365,1375], int:'m', cat:'ketone', specificity:3,
+    label:'O=C-CH₃ bend (methyl ketone)', requires: c => c.O > 0 && c.ihd >= 1 },
+
+  // ---- Carboxylic acid C=O ----
+  { bond:'C=O', fg:'carboxylic acid', vib:'stretch', range:[1690,1730], int:'s,b', cat:'acid', specificity:3,
+    label:'C=O stretch (carboxylic acid)', requires: c => c.O >= 2 && c.ihd >= 1 },
+
+  // ---- Ester C=O ----
+  { bond:'C=O', fg:'ester', vib:'stretch', range:[1730,1750], int:'s', cat:'ester', specificity:3,
+    label:'C=O stretch (ester)', requires: c => c.O >= 2 && c.ihd >= 1 },
+  { bond:'C=O', fg:'ester, conj. (at C=O)', vib:'stretch', range:[1680,1740], int:'s', cat:'ester', specificity:4,
+    label:'C=O stretch (ester, conjugated at C=O side)', requires: c => c.O >= 2 && c.ihd >= 2 },
+  { bond:'C=O', fg:'ester, conj. (at C-O)', vib:'stretch', range:[1760,1765], int:'s', cat:'ester', specificity:4,
+    label:'C=O stretch (ester, conjugated at C-O side)', requires: c => c.O >= 2 && c.ihd >= 2 },
+  { bond:'C=O', fg:'ester, cyclic (lactone)', vib:'stretch', range:[1735,1820], int:'s', cat:'ester', specificity:3,
+    label:'C=O stretch (lactone)', requires: c => c.O >= 2 && c.ihd >= 2 },
+
+  // ---- Amide ----
+  { bond:'C=O', fg:'amide', vib:'stretch', range:[1630,1690], int:'s,b', cat:'amide', specificity:3,
+    label:'C=O stretch (amide)', requires: c => c.N > 0 && c.O > 0 && c.ihd >= 1 },
+  { bond:'C=O', fg:'amide, cyclic (lactam)', vib:'stretch', range:[1660,1745], int:'s', cat:'amide', specificity:3,
+    label:'C=O stretch (lactam)', requires: c => c.N > 0 && c.O > 0 && c.ihd >= 2 },
+  { bond:'N-H', fg:'amide', vib:'stretch', range:[3150,3480], int:'s-m', cat:'amide', specificity:2,
+    label:'N-H stretch (amide)', requires: c => c.N > 0 },
+  { bond:'N-H', fg:'amide, primary', vib:'bend', range:[1620,1640], int:'s,b', cat:'amide', specificity:3,
+    label:'N-H bend (primary amide, "amide II")', requires: c => c.N > 0 },
+  { bond:'N-H', fg:'amide, primary', vib:'bend', range:[1120,1130], int:'', cat:'amide', specificity:3,
+    label:'N-H bend (primary amide, ~1125)', requires: c => c.N > 0 },
+  { bond:'N-H', fg:'amide, primary', vib:'bend', range:[600,750], int:'b', cat:'amide', specificity:3,
+    label:'N-H oop bend (primary amide, broad)', requires: c => c.N > 0 },
+  { bond:'N-H', fg:'amide, secondary', vib:'bend', range:[1545,1555], int:'s', cat:'amide', specificity:3,
+    label:'N-H bend (secondary amide)', requires: c => c.N > 0 },
+  { bond:'C-N', fg:'amide, primary', vib:'stretch', range:[1395,1405], int:'s-m', cat:'amide', specificity:3,
+    label:'C-N stretch (primary amide)', requires: c => c.N > 0 && c.O > 0 },
+
+  // ---- Anhydride ----
+  { bond:'C=O', fg:'anhydride', vib:'stretch', range:[1800,1830], int:'s', cat:'anhydride', specificity:3,
+    label:'C=O stretch (anhydride, higher band)', requires: c => c.O >= 3 && c.ihd >= 2 },
+  { bond:'C=O', fg:'anhydride', vib:'stretch', range:[1740,1780], int:'s', cat:'anhydride', specificity:3,
+    label:'C=O stretch (anhydride, lower band)', requires: c => c.O >= 3 && c.ihd >= 2 },
+  { bond:'C=O', fg:'anhydride, conj.', vib:'stretch', range:[1770,1800], int:'s', cat:'anhydride', specificity:4,
+    label:'C=O stretch (anhydride, conjugated, higher)', requires: c => c.O >= 3 && c.ihd >= 3 },
+  { bond:'C=O', fg:'anhydride, conj.', vib:'stretch', range:[1710,1750], int:'s', cat:'anhydride', specificity:4,
+    label:'C=O stretch (anhydride, conjugated, lower)', requires: c => c.O >= 3 && c.ihd >= 3 },
+  { bond:'C=O', fg:'anhydride, cyclic', vib:'stretch', range:[1855,1865], int:'s', cat:'anhydride', specificity:4,
+    label:'C=O stretch (cyclic anhydride, higher)', requires: c => c.O >= 3 && c.ihd >= 3 },
+  { bond:'C=O', fg:'anhydride, cyclic', vib:'stretch', range:[1775,1785], int:'s', cat:'anhydride', specificity:4,
+    label:'C=O stretch (cyclic anhydride, lower)', requires: c => c.O >= 3 && c.ihd >= 3 },
+  { bond:'C-O', fg:'anhydride', vib:'stretch', range:[900,1300], int:'s,b', cat:'anhydride', specificity:1,
+    label:'C-O stretch (anhydride)', requires: c => c.O >= 3 },
+
+  // ---- Acid chloride ----
+  { bond:'C=O', fg:'acid chloride', vib:'stretch', range:[1775,1810], int:'s', cat:'acyl_cl', specificity:3,
+    label:'C=O stretch (acid chloride)', requires: c => c.Cl > 0 && c.O > 0 && c.ihd >= 1 },
+  { bond:'C=O', fg:'acid chloride, conj.', vib:'stretch', range:[1760,1780], int:'s', cat:'acyl_cl', specificity:4,
+    label:'C=O stretch (acid chloride, conjugated)', requires: c => c.Cl > 0 && c.O > 0 && c.ihd >= 2 },
+  { bond:'C=O', fg:'acid chloride, aromatic', vib:'overtone', range:[1725,1735], int:'m-w', cat:'acyl_cl', specificity:4,
+    label:'C=O overtone (aromatic acid chloride)', requires: c => c.Cl > 0 && c.O > 0 && c.ihd >= 5 },
+
+  // ---- Amine ----
+  { bond:'N-H', fg:'amine', vib:'stretch', range:[3300,3500], int:'m-w', cat:'amine', specificity:1,
+    label:'N-H stretch (amine)', requires: c => c.N > 0 },
+  { bond:'N-H', fg:'amine, primary', vib:'bend', range:[1560,1640], int:'s-m,b', cat:'amine', specificity:2,
+    label:'N-H bend (primary amine)', requires: c => c.N > 0 },
+  { bond:'N-H', fg:'amine, secondary, aromatic', vib:'bend', range:[1495,1505], int:'m', cat:'amine', specificity:3,
+    label:'N-H bend (secondary aromatic amine)', requires: c => c.N > 0 && c.ihd >= 4 },
+  { bond:'N-H', fg:'amine', vib:'oop', range:[795,805], int:'b', cat:'amine', specificity:1,
+    label:'N-H oop bend (amine, broad ~800)', requires: c => c.N > 0 },
+  { bond:'C-N', fg:'amine, aromatic', vib:'stretch', range:[1250,1350], int:'s-m', cat:'amine', specificity:2,
+    label:'C-N stretch (aromatic amine)', requires: c => c.N > 0 && c.ihd >= 4 },
+  { bond:'C-N', fg:'amine, aliphatic', vib:'stretch', range:[1000,1250], int:'s-m', cat:'amine', specificity:2,
+    label:'C-N stretch (aliphatic amine)', requires: c => c.N > 0 },
+
+  // ---- Nitro ----
+  { bond:'N-O', fg:'nitro', vib:'stretch', range:[1520,1600], int:'s', cat:'nitro', specificity:2,
+    label:'N-O asymmetric stretch (nitro)', requires: c => c.N > 0 && c.O >= 2 },
+  { bond:'N-O', fg:'nitro', vib:'stretch', range:[1300,1390], int:'m', cat:'nitro', specificity:2,
+    label:'N-O symmetric stretch (nitro)', requires: c => c.N > 0 && c.O >= 2 },
+  { bond:'N-O', fg:'nitro, conj.', vib:'stretch', range:[1490,1550], int:'s', cat:'nitro', specificity:3,
+    label:'N-O asymmetric stretch (nitro, conjugated)', requires: c => c.N > 0 && c.O >= 2 && c.ihd >= 1 },
+  { bond:'N-O', fg:'nitro, conj.', vib:'stretch', range:[1310,1360], int:'s', cat:'nitro', specificity:3,
+    label:'N-O symmetric stretch (nitro, conjugated)', requires: c => c.N > 0 && c.O >= 2 && c.ihd >= 1 },
+  { bond:'N=O', fg:'nitroso', vib:'stretch', range:[1500,1600], int:'s', cat:'nitro', specificity:2,
+    label:'N=O stretch (nitroso)', requires: c => c.N > 0 && c.O > 0 },
+
+  // ---- Imine / Oxime ----
+  { bond:'C=N', fg:'imine or oxime', vib:'stretch', range:[1640,1690], int:'v', cat:'imine', specificity:2,
+    label:'C=N stretch (imine or oxime)', requires: c => c.N > 0 && c.ihd >= 1 },
+
+  // ---- Nitrile ----
+  { bond:'C≡N', fg:'nitrile', vib:'stretch', range:[2210,2270], int:'m', cat:'nitrile', specificity:3,
+    label:'C≡N stretch (nitrile)', requires: c => c.N > 0 && c.ihd >= 2 },
+
+  // ---- Cumulated double bonds ----
+  { bond:'C=C=C', fg:'allene', vib:'stretch', range:[1935,1945], int:'s-m', cat:'cumulated', specificity:3,
+    label:'C=C=C stretch (allene)', requires: c => c.ihd >= 2 },
+  { bond:'C=C=O', fg:'ketene', vib:'stretch', range:[2135,2145], int:'s,b', cat:'cumulated', specificity:3,
+    label:'C=C=O stretch (ketene)', requires: c => c.O > 0 && c.ihd >= 2 },
+  { bond:'N=C=O', fg:'isocyanate', vib:'stretch', range:[2265,2275], int:'s,b', cat:'cumulated', specificity:3,
+    label:'N=C=O stretch (isocyanate)', requires: c => c.N > 0 && c.O > 0 && c.ihd >= 2 },
+  { bond:'N=C=S', fg:'isothiocyanate', vib:'stretch', range:[2120,2130], int:'s,b', cat:'cumulated', specificity:3,
+    label:'N=C=S stretch (isothiocyanate)', requires: c => c.N > 0 && c.S > 0 && c.ihd >= 2 },
+
+  // ---- Sulfur ----
+  { bond:'S-H', fg:'thiol', vib:'stretch', range:[2545,2555], int:'w', cat:'sulfur', specificity:2,
+    label:'S-H stretch (thiol)', requires: c => c.S > 0 },
+  { bond:'S=O', fg:'sulfoxide', vib:'stretch', range:[1045,1055], int:'s', cat:'sulfur', specificity:2,
+    label:'S=O stretch (sulfoxide)', requires: c => c.S > 0 && c.O > 0 },
+  { bond:'S=O', fg:'sulfone/sulfonyl', vib:'stretch', range:[1300,1375], int:'s', cat:'sulfur', specificity:2,
+    label:'S=O asymmetric stretch (sulfone/sulfonyl)', requires: c => c.S > 0 && c.O >= 2 },
+  { bond:'S=O', fg:'sulfone/sulfonyl', vib:'stretch', range:[1150,1190], int:'s', cat:'sulfur', specificity:2,
+    label:'S=O symmetric stretch (sulfone/sulfonyl)', requires: c => c.S > 0 && c.O >= 2 },
+  { bond:'S-O', fg:'sulfonate', vib:'stretch', range:[750,1000], int:'s', cat:'sulfur', specificity:2,
+    label:'S-O stretch (sulfonate)', requires: c => c.S > 0 && c.O >= 3 },
+  { bond:'S-O', fg:'sulfonic acid', vib:'stretch', range:[645,655], int:'s', cat:'sulfur', specificity:2,
+    label:'S-O stretch (sulfonic acid)', requires: c => c.S > 0 && c.O >= 3 },
+  { bond:'S=O', fg:'sulfonamide', vib:'stretch', range:[1320,1330], int:'s', cat:'sulfur', specificity:2,
+    label:'S=O stretch (sulfonamide, higher)', requires: c => c.S > 0 && c.N > 0 && c.O >= 2 },
+  { bond:'S=O', fg:'sulfonamide', vib:'stretch', range:[1135,1145], int:'s', cat:'sulfur', specificity:2,
+    label:'S=O stretch (sulfonamide, lower)', requires: c => c.S > 0 && c.N > 0 && c.O >= 2 },
+
+  // ---- Phosphorus ----
+  { bond:'P-H', fg:'phosphine', vib:'stretch', range:[2270,2320], int:'s', cat:'phosphorus', specificity:2,
+    label:'P-H stretch (phosphine)', requires: c => c.P > 0 },
+  { bond:'P-H', fg:'phosphine', vib:'bend', range:[1075,1090], int:'m', cat:'phosphorus', specificity:2,
+    label:'P-H bend (phosphine, ~1080)', requires: c => c.P > 0 },
+  { bond:'P-H', fg:'phosphine', vib:'bend', range:[810,840], int:'m', cat:'phosphorus', specificity:2,
+    label:'P-H bend (phosphine, ~825)', requires: c => c.P > 0 },
+  { bond:'P-H', fg:'phosphine', vib:'bend', range:[885,900], int:'m', cat:'phosphorus', specificity:2,
+    label:'P-H bend (phosphine, ~890)', requires: c => c.P > 0 },
+  { bond:'P-C', fg:'phosphine', vib:'bend', range:[1395,1450], int:'m', cat:'phosphorus', specificity:2,
+    label:'P-C bend (phosphine, higher)', requires: c => c.P > 0 },
+  { bond:'P-C', fg:'phosphine', vib:'bend', range:[1255,1345], int:'m', cat:'phosphorus', specificity:2,
+    label:'P-C bend (phosphine, lower)', requires: c => c.P > 0 },
+  { bond:'P=O', fg:'phosphine oxide', vib:'stretch', range:[1140,1210], int:'s', cat:'phosphorus', specificity:2,
+    label:'P=O stretch (phosphine oxide)', requires: c => c.P > 0 && c.O > 0 },
+  { bond:'P=O', fg:'phosphate ester', vib:'stretch', range:[1240,1300], int:'s', cat:'phosphorus', specificity:2,
+    label:'P=O stretch (phosphate ester)', requires: c => c.P > 0 && c.O > 0 },
+  { bond:'P-O', fg:'phosphate ester', vib:'stretch', range:[725,845], int:'m', cat:'phosphorus', specificity:2,
+    label:'P-O stretch (phosphate ester)', requires: c => c.P > 0 && c.O > 0 },
+  { bond:'C-O', fg:'phosphate ester', vib:'stretch', range:[920,1088], int:'s', cat:'phosphorus', specificity:2,
+    label:'C-O stretch (phosphate ester)', requires: c => c.P > 0 && c.O > 0 },
+];
+
+// Return ALL matching entries from IR_REFERENCE_TABLE for a given wavenumber,
+// sorted by specificity descending (most specific first). Gated by compound
+// context (elements + IHD). Used to populate the combobox dropdown.
+function lookupAllIRMatches(wavenumber, context) {
+  const matches = [];
+  for (const entry of IR_REFERENCE_TABLE) {
+    if (wavenumber < entry.range[0] || wavenumber > entry.range[1]) continue;
+    if (entry.requires && !entry.requires(context)) continue;
+    matches.push(entry);
+  }
+  matches.sort((a, b) => b.specificity - a.specificity);
+  return matches;
+}
+
+// Auto-suggestion: pick the LOWEST specificity match (most general) from the
+// full reference table. This is what auto-populates the text field; the user
+// can then pick a more specific option from the combobox dropdown.
+function suggestIRDescription(wavenumber, context) {
+  const matches = lookupAllIRMatches(wavenumber, context);
+  if (matches.length === 0) return '';
+  // Matches are sorted specificity desc; last one is most general
+  return matches[matches.length - 1].label;
+}
+
+// Build a compound context object for IR suggestion gating from current form state
+function getCurrentCompoundContext() {
+  const formula = document.getElementById('formula').value.trim();
+  const counts = parseFormula(formula) || {};
+  const ihd = computeIHD(counts);
+  return {
+    C: counts.C || 0,
+    H: counts.H || 0,
+    O: counts.O || 0,
+    N: counts.N || 0,
+    Cl: counts.Cl || 0,
+    Br: counts.Br || 0,
+    F: counts.F || 0,
+    I: counts.I || 0,
+    S: counts.S || 0,
+    P: counts.P || 0,
+    ihd: ihd !== null ? ihd : 0
+  };
+}
+
+// =======================================================================
+// IR COMBOBOX: dropdown of matching assignments for each label row
+// =======================================================================
+// Key design: the dropdown always shows ALL structurally-plausible matches
+// for the current wavenumber, sorted most-specific-first. Typing in the
+// input filters the list. Clicking the toggle arrow (or arrow-down) opens
+// the FULL list regardless of what text is in the input.
+
+function initIRCombobox(row) {
+  const input = row.querySelector('.label-assignment');
+  const toggle = row.querySelector('.combo-toggle');
+  const dropdown = row.querySelector('.ir-combo-dropdown');
+  const wnInput = row.querySelector('.label-wavenumber');
+  if (!input || !dropdown) return;
+
+  let highlightIdx = -1;
+  let showAll = false; // true when opened via toggle/arrow, false when typing
+
+  function buildOptions(matches) {
+    dropdown.innerHTML = '';
+    highlightIdx = -1;
+
+    if (matches.length === 0) {
+      const wn = parseInt(wnInput.value);
+      dropdown.innerHTML = isNaN(wn)
+        ? '<div class="ir-combo-no-match">Enter a wavenumber first</div>'
+        : '<div class="ir-combo-no-match">No matching vibrations at ' + wn + ' cm⁻¹</div>';
+      return;
+    }
+
+    matches.forEach((entry, idx) => {
+      const opt = document.createElement('div');
+      opt.className = 'ir-combo-option';
+      opt.dataset.idx = idx;
+
+      const rangeStr = entry.range[1] - entry.range[0] <= 10
+        ? `~${Math.round((entry.range[0] + entry.range[1]) / 2)}`
+        : `${entry.range[0]}\u2013${entry.range[1]}`;
+
+      opt.innerHTML = `
+        <span class="combo-label">${escapeHtml(entry.label)}</span>
+        <span class="combo-meta">${rangeStr} cm⁻¹</span>
+        <span class="combo-tag">${entry.int || '?'}</span>
+      `;
+      opt.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // don't blur the input
+        input.value = entry.label;
+        closeDropdown();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      dropdown.appendChild(opt);
+    });
+  }
+
+  function getMatches() {
+    const wn = parseInt(wnInput.value);
+    if (isNaN(wn) || wn < 400 || wn > 4000) return [];
+    const context = getCurrentCompoundContext();
+    return lookupAllIRMatches(wn, context);
+  }
+
+  function populateDropdown() {
+    let matches = getMatches();
+    // If user is typing (not showAll), filter by typed text
+    if (!showAll) {
+      const typed = input.value.trim().toLowerCase();
+      if (typed) {
+        matches = matches.filter(m => m.label.toLowerCase().includes(typed));
+      }
+    }
+    buildOptions(matches);
+  }
+
+  function openDropdown(forceAll) {
+    showAll = !!forceAll;
+    populateDropdown();
+    dropdown.classList.add('open');
+  }
+
+  function closeDropdown() {
+    dropdown.classList.remove('open');
+    highlightIdx = -1;
+    showAll = false;
+  }
+
+  function highlightOption(idx) {
+    const opts = dropdown.querySelectorAll('.ir-combo-option');
+    opts.forEach(o => o.classList.remove('highlighted'));
+    if (idx >= 0 && idx < opts.length) {
+      opts[idx].classList.add('highlighted');
+      opts[idx].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  // Open on focus: show all matches (not filtered by current text)
+  input.addEventListener('focus', () => openDropdown(true));
+
+  // Toggle button: open showing all, or close
+  toggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (dropdown.classList.contains('open')) {
+      closeDropdown();
+    } else {
+      input.focus();
+      openDropdown(true);
+    }
+  });
+
+  // As user types, filter the list (not showAll)
+  input.addEventListener('input', () => {
+    showAll = false;
+    if (dropdown.classList.contains('open')) populateDropdown();
+  });
+
+  // Re-populate when wavenumber changes
+  wnInput.addEventListener('input', () => {
+    if (dropdown.classList.contains('open')) populateDropdown();
+  });
+
+  // Keyboard navigation
+  input.addEventListener('keydown', (e) => {
+    const opts = dropdown.querySelectorAll('.ir-combo-option');
+    if (!dropdown.classList.contains('open') || opts.length === 0) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        openDropdown(true);
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlightIdx = Math.min(highlightIdx + 1, opts.length - 1);
+      highlightOption(highlightIdx);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlightIdx = Math.max(highlightIdx - 1, 0);
+      highlightOption(highlightIdx);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlightIdx >= 0 && highlightIdx < opts.length) {
+        opts[highlightIdx].dispatchEvent(new Event('mousedown'));
+      }
+      closeDropdown();
+    } else if (e.key === 'Escape') {
+      closeDropdown();
+    }
+  });
+
+  // Close on blur (small delay so mousedown on option fires first)
+  input.addEventListener('blur', () => {
+    setTimeout(closeDropdown, 180);
+  });
+}
+
+// =======================================================================
+// IR REFERENCE SIDEBAR: full-height right panel with filter checkboxes
+// =======================================================================
+function initIRReferenceSidebar() {
+  const sidebar = document.getElementById('ir-ref-sidebar');
+  const toggleBtn = document.getElementById('ir-ref-toggle');
+  const closeBtn = document.getElementById('ir-ref-close');
+  const filtersDiv = document.getElementById('ir-ref-filters');
+  const tbody = document.getElementById('ir-ref-tbody');
+  const countDiv = document.getElementById('ir-ref-count');
+
+  // Toggle open/close
+  function openSidebar() {
+    sidebar.classList.add('open');
+    document.body.classList.add('ir-sidebar-open');
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    document.body.classList.remove('ir-sidebar-open');
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    if (sidebar.classList.contains('open')) closeSidebar();
+    else openSidebar();
+  });
+  closeBtn.addEventListener('click', closeSidebar);
+
+  // Build filter checkboxes (2-column grid)
+  let filterHtml = '';
+  IR_REF_CATEGORIES.forEach(cat => {
+    filterHtml += `<label><input type="checkbox" data-cat="${cat.id}"> ${cat.label}</label>`;
+  });
+  filtersDiv.innerHTML = filterHtml;
+
+  // Build the table rows
+  IR_REFERENCE_TABLE.forEach((entry, idx) => {
+    const tr = document.createElement('tr');
+    tr.dataset.cat = entry.cat;
+    tr.dataset.idx = idx;
+
+    const rangeStr = entry.range[1] - entry.range[0] <= 10
+      ? `~${Math.round((entry.range[0] + entry.range[1]) / 2)}`
+      : `${entry.range[0]}\u2013${entry.range[1]}`;
+
+    tr.innerHTML = `
+      <td>${escapeHtml(entry.bond)}</td>
+      <td>${escapeHtml(entry.fg)}</td>
+      <td>${escapeHtml(entry.vib)}</td>
+      <td>${rangeStr}</td>
+      <td>${entry.int || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  function applyFilters() {
+    const checked = [...filtersDiv.querySelectorAll('input[type="checkbox"]:checked')]
+      .map(cb => cb.dataset.cat);
+    const rows = tbody.querySelectorAll('tr');
+    let visible = 0;
+
+    if (checked.length === 0) {
+      rows.forEach(r => { r.classList.remove('ref-hidden'); visible++; });
+    } else {
+      rows.forEach(r => {
+        if (checked.includes(r.dataset.cat)) {
+          r.classList.remove('ref-hidden');
+          visible++;
+        } else {
+          r.classList.add('ref-hidden');
+        }
+      });
+    }
+
+    countDiv.textContent = checked.length === 0
+      ? `All ${rows.length} entries`
+      : `${visible} of ${rows.length}`;
+  }
+
+  filtersDiv.addEventListener('change', applyFilters);
+  document.getElementById('ir-ref-clear-filters').addEventListener('click', () => {
+    filtersDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    applyFilters();
+  });
+
+  countDiv.textContent = `All ${IR_REFERENCE_TABLE.length} entries`;
+}
+
+document.addEventListener('DOMContentLoaded', initIRReferenceSidebar);
+
+function parseIR(text) {
+  if (!text.trim()) return { peaks: [], errors: ['empty'] };
+  const peaks = [];
+  const errors = [];
+
+  const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+  for (const line of lines) {
+    if (!/^\d/.test(line)) continue;
+    const m = line.match(/^(\d{3,5})[\s\t]+(\d+\.?\d*)$/);
+    if (m) {
+      const wavenumber = parseInt(m[1]);
+      const transmittance = parseFloat(m[2]);
+      peaks.push({
+        wavenumber,
+        transmittance,
+        intensity: classifyIRIntensity(transmittance)
+      });
+    }
+  }
+
+  peaks.sort((a, b) => b.wavenumber - a.wavenumber);
+  return { peaks, errors };
+}
+
+// MS: parse SDBS-style (m/z, intensity, optional assignment)
+function parseMS(text) {
+  if (!text.trim()) return { fragments: [], errors: ['empty'] };
+  const fragments = [];
+  const errors = [];
+
+  const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+  for (const line of lines) {
+    if (!/^\d/.test(line)) continue;
+    const m = line.match(/^(\d+\.?\d*)[\s,\t]+(\d+\.?\d*)(?:[\s,\t]+(.*))?$/);
+    if (!m) {
+      errors.push(`Could not parse: "${line}"`);
+      continue;
+    }
+    const frag = {
+      mz: parseFloat(m[1]),
+      relative_intensity: parseFloat(m[2])
+    };
+    if (m[3] && m[3].trim()) {
+      const rest = m[3].trim();
+      const lossMatch = rest.match(/loss\s+of\s+(\S+)/i);
+      if (lossMatch) {
+        frag.loss = lossMatch[1];
+        const assignment = rest.replace(/,?\s*loss\s+of\s+\S+/i, '').replace(/^,\s*/, '').trim();
+        if (assignment) frag.description = assignment;
+      } else {
+        frag.description = rest.split(',')[0].trim();
+      }
+    }
+    fragments.push(frag);
+  }
+
+  fragments.sort((a, b) => b.mz - a.mz);
+  return { fragments, errors };
+}
+
+// =====================================================================
+// JCAMP-DX PARSER (NIST IR)
+// =====================================================================
+
+function parseJCAMP(text) {
+  const result = {
+    title: null, dataType: null, xUnits: null, yUnits: null,
+    firstX: null, lastX: null, nPoints: null,
+    xFactor: 1, yFactor: 1, deltaX: null,
+    points: [], errors: []
+  };
+
+  const lines = text.split(/\r?\n/);
+  let dataStartIndex = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.startsWith('##')) {
+      const m = line.match(/^##([^=]+)=\s*(.*)$/);
+      if (m) {
+        const label = m[1].trim().toUpperCase().replace(/[\s\.]/g, '');
+        const value = m[2].trim();
+        switch (label) {
+          case 'TITLE': result.title = value; break;
+          case 'DATATYPE': result.dataType = value; break;
+          case 'XUNITS': result.xUnits = value; break;
+          case 'YUNITS': result.yUnits = value; break;
+          case 'FIRSTX': result.firstX = parseFloat(value); break;
+          case 'LASTX': result.lastX = parseFloat(value); break;
+          case 'NPOINTS': result.nPoints = parseInt(value); break;
+          case 'XFACTOR': result.xFactor = parseFloat(value); break;
+          case 'YFACTOR': result.yFactor = parseFloat(value); break;
+          case 'DELTAX': result.deltaX = parseFloat(value); break;
+          case 'XYDATA': dataStartIndex = i + 1; break;
+        }
+      }
+      if (dataStartIndex !== -1) break;
+    }
+  }
+
+  if (dataStartIndex === -1) {
+    result.errors.push('No ##XYDATA= section found');
+    return result;
+  }
+
+  if (result.deltaX === null && result.firstX !== null && result.lastX !== null && result.nPoints) {
+    result.deltaX = (result.lastX - result.firstX) / (result.nPoints - 1);
+  }
+
+  // Parse data: handle both plain AFFN and basic SQZ/DIF compressed formats.
+  // For SQZ/DIF, we expand the characters into space-separated numbers first.
+  const SQZ_MAP = {
+    '@': '0',
+    'A': '1', 'B': '2', 'C': '3', 'D': '4', 'E': '5',
+    'F': '6', 'G': '7', 'H': '8', 'I': '9',
+    'a': '-1', 'b': '-2', 'c': '-3', 'd': '-4', 'e': '-5',
+    'f': '-6', 'g': '-7', 'h': '-8', 'i': '-9'
+  };
+  const DIF_MAP = {
+    '%': '0',
+    'J': '1', 'K': '2', 'L': '3', 'M': '4', 'N': '5',
+    'O': '6', 'P': '7', 'Q': '8', 'R': '9',
+    'j': '-1', 'k': '-2', 'l': '-3', 'm': '-4', 'n': '-5',
+    'o': '-6', 'p': '-7', 'q': '-8', 'r': '-9'
+  };
+
+  let prevY = 0;
+  for (let i = dataStartIndex; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    if (line.startsWith('##')) break;
+
+    // Detect compressed format: presence of SQZ/DIF/PAC characters within the line
+    const hasCompression = /[A-Ia-i%J-Rj-rS-Zs+]/.test(line.replace(/^[\d.\-+\s]+/, ''));
+
+    if (hasCompression) {
+      // Expand SQZ/DIF/DUP characters. The first numeric token is X.
+      let expanded = '';
+      for (let j = 0; j < line.length; j++) {
+        const ch = line[j];
+        if (ch in SQZ_MAP) expanded += ' ' + SQZ_MAP[ch];
+        else if (ch in DIF_MAP) expanded += ' D' + DIF_MAP[ch];
+        else expanded += ch;
+      }
+      const tokens = expanded.split(/\s+/).filter(Boolean);
+      if (tokens.length < 2) continue;
+      const xStart = parseFloat(tokens[0]) * result.xFactor;
+      const ys = [];
+      let lastY = prevY;
+      for (let k = 1; k < tokens.length; k++) {
+        const tok = tokens[k];
+        if (tok.startsWith('D')) {
+          const diff = parseFloat(tok.substring(1));
+          if (!isNaN(diff)) {
+            lastY = lastY + diff;
+            ys.push(lastY);
+          }
+        } else {
+          const y = parseFloat(tok);
+          if (!isNaN(y)) { ys.push(y); lastY = y; }
+        }
+      }
+      for (let j = 0; j < ys.length; j++) {
+        const x = xStart + j * (result.deltaX || 1);
+        result.points.push({ x, y: ys[j] * result.yFactor });
+      }
+      prevY = lastY;
+    } else {
+      // Plain AFFN
+      const tokens = line.split(/\s+/).filter(Boolean);
+      if (tokens.length < 2) continue;
+      const xStart = parseFloat(tokens[0]) * result.xFactor;
+      for (let j = 1; j < tokens.length; j++) {
+        const y = parseFloat(tokens[j]);
+        if (isNaN(y)) continue;
+        const x = xStart + (j - 1) * (result.deltaX || 1);
+        result.points.push({ x, y: y * result.yFactor });
+      }
+      prevY = parseFloat(tokens[tokens.length - 1]);
+    }
+  }
+
+  return result;
+}
+
+function pickPeaksFromJCAMP(jcamp) {
+  const isTransmittance = jcamp.yUnits && jcamp.yUnits.toUpperCase().includes('TRANSMITTANCE');
+  const sorted = [...jcamp.points].sort((a, b) => b.x - a.x);
+  const points = sorted.map(p => {
+    let T = isTransmittance ? (p.y > 1.5 ? p.y : p.y * 100) : (100 * Math.pow(10, -p.y));
+    return { wavenumber: Math.round(p.x), transmittance: T };
+  });
+
+  // Detect detector saturation: a string of consecutive points where T is
+  // effectively zero indicates the detector clipped on a very strong peak.
+  // The standard peak-picker would find spurious "edge peaks" at the start
+  // and end of the flatlined region. Replace each saturated run with one
+  // point at the midpoint, since that's the best estimate of the real peak.
+  // Only triggers on near-zero T (< 1.0%) to avoid touching normal data.
+  const SATURATION_MAX_T = 1.0;     // T must be below this to count
+  const SATURATION_MIN_LENGTH = 3;  // need at least this many consecutive saturated points
+  const collapsed = [];
+  let i = 0;
+  while (i < points.length) {
+    if (points[i].transmittance > SATURATION_MAX_T) {
+      collapsed.push(points[i]);
+      i++;
+      continue;
+    }
+    let j = i;
+    while (j + 1 < points.length && points[j + 1].transmittance <= SATURATION_MAX_T) {
+      j++;
+    }
+    const runLength = j - i + 1;
+    if (runLength >= SATURATION_MIN_LENGTH) {
+      const midWavenumber = Math.round((points[i].wavenumber + points[j].wavenumber) / 2);
+      const avgT = (points[i].transmittance + points[j].transmittance) / 2;
+      collapsed.push({ wavenumber: midWavenumber, transmittance: avgT });
+      i = j + 1;
+    } else {
+      // Short run: keep as-is, don't collapse
+      for (let k = i; k <= j; k++) collapsed.push(points[k]);
+      i = j + 1;
+    }
+  }
+
+  const candidates = [];
+  const windowHalf = 3;
+  for (let i = windowHalf; i < collapsed.length - windowHalf; i++) {
+    const center = collapsed[i].transmittance;
+    if (center > 90) continue;
+    let isMin = true;
+    for (let j = -windowHalf; j <= windowHalf; j++) {
+      if (j === 0) continue;
+      if (collapsed[i + j].transmittance < center) { isMin = false; break; }
+    }
+    if (isMin) {
+      candidates.push({
+        wavenumber: collapsed[i].wavenumber,
+        transmittance: Math.round(collapsed[i].transmittance * 10) / 10,
+        intensity: classifyIRIntensity(collapsed[i].transmittance)
+      });
+    }
+  }
+
+  // Merge candidates within 8 cm-1 of each other, keeping the deepest
+  const merged = [];
+  const used = new Set();
+  for (let i = 0; i < candidates.length; i++) {
+    if (used.has(i)) continue;
+    let best = candidates[i];
+    for (let j = i + 1; j < candidates.length; j++) {
+      if (used.has(j)) continue;
+      if (Math.abs(candidates[j].wavenumber - best.wavenumber) <= 8) {
+        if (candidates[j].transmittance < best.transmittance) best = candidates[j];
+        used.add(j);
+      }
+    }
+    merged.push(best);
+    used.add(i);
+  }
+
+  return merged;
+}
+
+// =====================================================================
+// SIGNAL LABELS UI
+// =====================================================================
+
+// Multiplicity options for the H NMR dropdown
+const MULTIPLICITY_OPTIONS = ['s', 'd', 't', 'q', 'p', 'sex', 'sept', 'dd', 'dt', 'td', 'm'];
+
+function addSignalLabelRow(technique, containerId, existing = null) {
+  const container = document.getElementById(containerId);
+  const row = document.createElement('div');
+  row.className = `signal-label-row ${technique}-row`;
+
+  const existingKeys = [...container.querySelectorAll('input.label-key')].map(i => i.value);
+  let nextKey = '';
+  if (!existing || !existing.key) {
+    const keySeq = technique === 'ir' ? 'zyxwvutsrqponmlk' : 'abcdefghijklmnop';
+    for (const l of keySeq) {
+      if (!existingKeys.includes(l)) { nextKey = l; break; }
+    }
+  } else {
+    nextKey = existing.key;
+  }
+
+  const ex = existing || {};
+  const assignment = ex.assignment || '';
+
+  if (technique === 'h') {
+    const shift = ex.shift !== undefined ? ex.shift : '';
+    const mult = ex.multiplicity || 's';
+    const j = (ex.j_hz && ex.j_hz.length > 0) ? ex.j_hz.join(', ') : '';
+    const integ = ex.integration !== undefined ? ex.integration : '';
+    const multOpts = MULTIPLICITY_OPTIONS.map(o =>
+      `<option value="${o}"${o === mult ? ' selected' : ''}>${o}</option>`
+    ).join('');
+
+    row.innerHTML = `
+      <input type="text" class="label-key" value="${escapeHtml(nextKey)}" placeholder="a">
+      <input type="number" class="label-shift" value="${shift}" placeholder="ppm" step="0.001" min="0" max="15">
+      <select class="label-mult">${multOpts}</select>
+      <input type="text" class="label-j" value="${j}" placeholder="J (Hz), e.g. 8.0, 2.0">
+      <input type="number" class="label-integration" value="${integ}" placeholder="int" min="1">
+      <input type="text" class="label-assignment" value="${escapeHtml(assignment)}" placeholder="assignment (e.g., OCH2)">
+      <button class="remove-btn">×</button>
+    `;
+  } else if (technique === 'c') {
+    const sdbsNum = ex.sdbs_assignment || '';
+    const shift = ex.shift !== undefined ? ex.shift : '';
+    const equiv = ex.equivalent_count !== undefined ? ex.equivalent_count : 1;
+
+    row.innerHTML = `
+      <div class="label-readonly">${sdbsNum ? `#${sdbsNum}` : '—'}</div>
+      <input type="text" class="label-key" value="${escapeHtml(nextKey)}" placeholder="a">
+      <input type="number" class="label-shift" value="${shift}" placeholder="ppm" step="0.001" min="0" max="250">
+      <input type="number" class="label-equiv" value="${equiv}" placeholder="count" min="1">
+      <input type="text" class="label-assignment" value="${escapeHtml(assignment)}" placeholder="assignment (e.g., carbonyl C)">
+      <button class="remove-btn">×</button>
+    `;
+    if (sdbsNum) row.dataset.sdbsAssignment = sdbsNum;
+  } else if (technique === 'ir') {
+    const wn = ex.wavenumber !== undefined ? ex.wavenumber : '';
+    const intensity = ex.intensity || 'strong';
+    const intensityOpts = ['strong', 'medium', 'weak', 'very weak'].map(o =>
+      `<option value="${o}"${o === intensity ? ' selected' : ''}>${o}</option>`
+    ).join('');
+
+    row.innerHTML = `
+      <input type="text" class="label-key" value="${escapeHtml(nextKey)}" placeholder="a">
+      <input type="number" class="label-wavenumber" value="${wn}" placeholder="cm⁻¹" step="1" min="400" max="4000">
+      <select class="label-intensity">${intensityOpts}</select>
+      <div class="ir-combobox">
+        <input type="text" class="label-assignment" value="${escapeHtml(assignment)}" placeholder="assignment (e.g., C=O stretch)"
+               autocomplete="off">
+        <button type="button" class="combo-toggle" tabindex="-1">▾</button>
+        <div class="ir-combo-dropdown"></div>
+      </div>
+      <button class="remove-btn">×</button>
+    `;
+    // Wire up the combobox after the row is in the DOM
+    setTimeout(() => initIRCombobox(row), 0);
+  } else if (technique === 'ms') {
+    const mz = ex.mz !== undefined ? ex.mz : '';
+    row.innerHTML = `
+      <input type="text" class="label-key" value="${escapeHtml(nextKey)}" placeholder="a">
+      <input type="number" class="label-mz" value="${mz}" placeholder="m/z" step="0.01" min="0">
+      <input type="text" class="label-assignment" value="${escapeHtml(assignment)}" placeholder="assignment (e.g., molecular ion)">
+      <button class="remove-btn">×</button>
+    `;
+  }
+
+  container.appendChild(row);
+  row.querySelector('.remove-btn').addEventListener('click', () => {
+    row.remove();
+    refreshIntegrationTarget();
+    updatePreview();
+  });
+  row.querySelectorAll('input, select').forEach(input => {
+    input.addEventListener('input', () => {
+      refreshIntegrationTarget();
+      updatePreview();
+    });
+    input.addEventListener('change', () => {
+      refreshIntegrationTarget();
+      updatePreview();
+    });
+  });
+}
+
+function ensureLabelHeader(containerId, technique) {
+  let header = document.getElementById(containerId + '-header');
+  if (header) return;
+
+  const container = document.getElementById(containerId);
+  header = document.createElement('div');
+  header.id = containerId + '-header';
+  header.className = `signal-label-header ${technique}-row`;
+
+  if (technique === 'h') {
+    header.innerHTML = '<div>key</div><div>shift (ppm)</div><div>mult</div><div>J (Hz)</div><div>int</div><div>assignment</div><div></div>';
+  } else if (technique === 'c') {
+    header.innerHTML = '<div>SDBS</div><div>key</div><div>shift (ppm)</div><div>equiv</div><div>assignment</div><div></div>';
+  } else if (technique === 'ir') {
+    header.innerHTML = '<div>key</div><div>wavenumber</div><div>intensity</div><div>assignment</div><div></div>';
+  } else if (technique === 'ms') {
+    header.innerHTML = '<div>key</div><div>m/z</div><div>assignment</div><div></div>';
+  }
+  container.parentElement.insertBefore(header, container);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+document.getElementById('add-h-label').addEventListener('click', () => {
+  ensureLabelHeader('h-signal-labels', 'h');
+  addSignalLabelRow('h', 'h-signal-labels');
+});
+document.getElementById('add-c-label').addEventListener('click', () => {
+  ensureLabelHeader('c-signal-labels', 'c');
+  addSignalLabelRow('c', 'c-signal-labels');
+});
+document.getElementById('add-ir-label').addEventListener('click', () => {
+  ensureLabelHeader('ir-signal-labels', 'ir');
+  addSignalLabelRow('ir', 'ir-signal-labels');
+});
+document.getElementById('add-ms-label').addEventListener('click', () => {
+  ensureLabelHeader('ms-signal-labels', 'ms');
+  addSignalLabelRow('ms', 'ms-signal-labels');
+});
+
+document.getElementById('rebuild-ir-labels').addEventListener('click', rebuildIRLabelsFromThreshold);
+
+// Collect signal labels from the rows for the given technique.
+// Returns the signal_labels object directly (no separate signals array;
+// the labels are now self-contained with all data needed by the renderer
+// and question generator).
+// Side effect: populates window._collectWarnings with any J-count mismatches
+// for the H NMR labels, which buildCompound surfaces via the status display.
+const EXPECTED_J_COUNT = {
+  's': 0, 'm': 0, 'br s': 0,
+  'd': 1, 't': 1, 'q': 1, 'p': 1, 'sex': 1, 'sept': 1,
+  'dd': 2, 'dt': 2, 'td': 2
+};
+
+function collectSignalLabels(containerId, technique) {
+  const labels = {};
+  const warnings = [];
+  const rows = document.querySelectorAll(`#${containerId} .signal-label-row`);
+
+  for (const row of rows) {
+    const key = row.querySelector('.label-key').value.trim();
+    if (!key) continue;
+    const entry = {};
+
+    const assignment = row.querySelector('.label-assignment').value.trim();
+    if (assignment) entry.assignment = assignment;
+
+    if (technique === 'h') {
+      const shift = parseFloat(row.querySelector('.label-shift').value);
+      const mult = row.querySelector('.label-mult').value;
+      const jRaw = row.querySelector('.label-j').value;
+      const jVals = jRaw.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v) && v > 0);
+      const integ = parseInt(row.querySelector('.label-integration').value);
+      if (!isNaN(shift)) entry.shift = shift;
+      if (mult) entry.multiplicity = mult;
+      if (jVals.length > 0) entry.j_hz = jVals;
+      if (!isNaN(integ)) entry.integration = integ;
+
+      // J count sanity check
+      const expected = EXPECTED_J_COUNT[mult];
+      if (expected !== undefined && jVals.length !== expected) {
+        const shiftStr = !isNaN(shift) ? `${shift} ppm` : `key ${key}`;
+        warnings.push(`${shiftStr} (${mult}): expected ${expected} J value${expected !== 1 ? 's' : ''}, got ${jVals.length}`);
+      }
+    } else if (technique === 'c') {
+      const shift = parseFloat(row.querySelector('.label-shift').value);
+      const equiv = parseInt(row.querySelector('.label-equiv').value);
+      if (!isNaN(shift)) entry.shift = shift;
+      if (!isNaN(equiv) && equiv > 0) entry.equivalent_count = equiv;
+    } else if (technique === 'ir') {
+      const wn = parseInt(row.querySelector('.label-wavenumber').value);
+      const intensity = row.querySelector('.label-intensity').value;
+      if (!isNaN(wn)) entry.wavenumber = wn;
+      if (intensity) entry.intensity = intensity;
+    } else if (technique === 'ms') {
+      const mz = parseFloat(row.querySelector('.label-mz').value);
+      if (!isNaN(mz)) entry.mz = mz;
+    }
+
+    labels[key] = entry;
+  }
+
+  // Stash warnings for the most recent H collection so the caller can display them.
+  // Cleared on every H call; ignored for other techniques.
+  if (technique === 'h') {
+    window._lastHCollectWarnings = warnings;
+  }
+
+  return labels;
+}
+
+// =====================================================================
+// AUTO-CREATE LABELS FROM PARSED SIGNALS
+// =====================================================================
+
+function autoCreateProtonLabels() {
+  const result = parseHNMR(document.getElementById('h-nmr').value);
+  if (result.signals.length === 0) return;
+
+  const container = document.getElementById('h-signal-labels');
+  if (container.querySelectorAll('.signal-label-row').length > 0) return;
+
+  ensureLabelHeader('h-signal-labels', 'h');
+
+  // Try to auto-fill integration if all signals are singlets and ratios are clean
+  const autoIntegrations = computeAutoIntegrationsH(result.signals);
+
+  result.signals.forEach((sig, i) => {
+    const key = 'abcdefghijklmnop'[i];
+    const data = {
+      key,
+      shift: sig.shift,
+      multiplicity: sig.multiplicity || 's',
+      j_hz: sig.j_hz || []
+    };
+    if (autoIntegrations && autoIntegrations[i] !== null) {
+      data.integration = autoIntegrations[i];
+    }
+    addSignalLabelRow('h', 'h-signal-labels', data);
+  });
+  refreshIntegrationTarget();
+}
+
+function autoCreateCarbonLabels() {
+  const result = parseCNMR(document.getElementById('c-nmr').value);
+  if (result.signals.length === 0) return;
+
+  const container = document.getElementById('c-signal-labels');
+  if (container.querySelectorAll('.signal-label-row').length > 0) return;
+
+  ensureLabelHeader('c-signal-labels', 'c');
+
+  result.signals.forEach((sig, i) => {
+    const key = 'abcdefghijklmnop'[i];
+    const data = {
+      key,
+      shift: sig.shift,
+      equivalent_count: 1
+    };
+    if (sig.sdbs_assignment) data.sdbs_assignment = sig.sdbs_assignment;
+    addSignalLabelRow('c', 'c-signal-labels', data);
+  });
+}
+
+function autoCreateIRLabels() {
+  const result = parseIR(document.getElementById('ir').value);
+  if (result.peaks.length === 0) return;
+
+  const container = document.getElementById('ir-signal-labels');
+  if (container.querySelectorAll('.signal-label-row').length > 0) return;
+
+  ensureLabelHeader('ir-signal-labels', 'ir');
+
+  // Auto-label all peaks below the threshold (default: T < 20 = strong).
+  // User decides which to keep. Suggested assignments are gated by structural
+  // plausibility (e.g., "aromatic" only suggested if IHD >= 4 and C >= 6).
+  const threshold = parseFloat(document.getElementById('ir-threshold').value) || 20;
+  const belowThreshold = result.peaks.filter(p => p.transmittance < threshold);
+  const context = getCurrentCompoundContext();
+
+  belowThreshold.forEach((peak, i) => {
+    const key = 'zyxwvutsrqponmlk'[i];
+    const suggestion = suggestIRDescription(peak.wavenumber, context);
+    addSignalLabelRow('ir', 'ir-signal-labels', {
+      key,
+      wavenumber: peak.wavenumber,
+      intensity: peak.intensity,
+      assignment: suggestion
+    });
+  });
+}
+
+// Rebuild IR labels from current peaks using the threshold (called when threshold changes)
+function rebuildIRLabelsFromThreshold() {
+  const container = document.getElementById('ir-signal-labels');
+  const rows = container.querySelectorAll('.signal-label-row');
+  // Check if user has typed any custom assignments worth preserving
+  const hasAssignments = [...rows].some(r => {
+    const inp = r.querySelector('.label-assignment');
+    return inp && inp.value.trim();
+  });
+  if (hasAssignments) {
+    if (!confirm('Rebuilding IR labels will lose your current assignments. Continue?')) {
+      return;
+    }
+  }
+  rows.forEach(r => r.remove());
+  autoCreateIRLabels();
+  updatePreview();
+}
+
+// Compute auto integration ratios when all signals are singlets and ratios
+// divide cleanly into the formula's H count. Returns null if not auto-fillable.
+function computeAutoIntegrationsH(signals) {
+  // Only safe to auto-fill from intensity when all are singlets
+  const allSinglets = signals.every(s => s.multiplicity === 's');
+  if (!allSinglets) return null;
+
+  const intensities = signals.map(s => s.intensity || 0);
+  if (intensities.some(i => i <= 0)) return null;
+
+  // Find lowest-terms integer ratios. Normalize to smallest, multiply by 1..10
+  const minInt = Math.min(...intensities);
+  const normalized = intensities.map(i => i / minInt);
+
+  for (let mult = 1; mult <= 10; mult++) {
+    const scaled = normalized.map(n => n * mult);
+    const rounded = scaled.map(s => Math.round(s));
+    const isClean = scaled.every((s, idx) => Math.abs(s - rounded[idx]) < 0.1);
+    if (isClean) {
+      // Check that GCD of rounded values is 1 (lowest terms)
+      const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+      let g = rounded[0];
+      for (let i = 1; i < rounded.length; i++) g = gcd(g, rounded[i]);
+      if (g === 1) {
+        // Verify against formula H count if available
+        const formula = document.getElementById('formula').value.trim();
+        const counts = parseFormula(formula);
+        if (counts && counts.H) {
+          const totalH = counts.H;
+          const sum = rounded.reduce((a, b) => a + b, 0);
+          // Sum must divide cleanly into formula H
+          if (totalH % sum !== 0) continue;
+        }
+        return rounded;
+      }
+    }
+  }
+  return null;
+}
+
+// =====================================================================
+// INTEGRATION TARGET DISPLAY (for 1H NMR)
+// =====================================================================
+
+function refreshIntegrationTarget() {
+  const formula = document.getElementById('formula').value.trim();
+  const counts = parseFormula(formula);
+  const targetEl = document.getElementById('h-integration-target');
+  if (!targetEl) return;
+
+  const rows = document.querySelectorAll('#h-signal-labels .signal-label-row');
+  if (rows.length === 0 || !counts || !counts.H) {
+    targetEl.innerHTML = '';
+    return;
+  }
+
+  const totalH = counts.H;
+  let sum = 0;
+  let hasAny = false;
+  for (const row of rows) {
+    const v = parseInt(row.querySelector('.label-integration').value);
+    if (!isNaN(v)) { sum += v; hasAny = true; }
+  }
+
+  if (!hasAny) {
+    targetEl.innerHTML = `<div class="integration-target warn"><span>integration sum:</span><span>— / divisor of ${totalH}</span></div>`;
+    return;
+  }
+
+  // Integration is a ratio; sum must divide H count cleanly
+  let className, message;
+  if (totalH % sum === 0) {
+    const multiplier = totalH / sum;
+    if (multiplier === 1) {
+      className = 'ok';
+      message = `${sum} / ${totalH} ✓ (counts equal H total)`;
+    } else {
+      className = 'ok';
+      message = `${sum} × ${multiplier} = ${totalH} ✓ (ratio scales to formula H)`;
+    }
+  } else if (totalH - sum >= 1 && totalH - sum <= 2 && sum < totalH) {
+    className = 'warn';
+    message = `${sum} (formula has ${totalH} H; possibly missing exchangeable proton)`;
+  } else {
+    className = 'err';
+    message = `${sum} doesn't divide ${totalH} H cleanly`;
+  }
+
+  targetEl.innerHTML = `<div class="integration-target ${className}"><span>integration sum:</span><span>${message}</span></div>`;
+}
+
+// =====================================================================
+// PARSE STATUS UPDATES
+// =====================================================================
+
+function updateStatus(id, label, parseFn) {
+  const text = document.getElementById(id).value;
+  const statusEl = document.getElementById(id.split('-')[0] + '-status');
+  if (!text.trim()) {
+    statusEl.className = 'parse-status empty';
+    statusEl.textContent = 'no data yet';
+    return;
+  }
+  const result = parseFn(text);
+  const count = (result.signals || result.peaks || result.fragments || []).length;
+  if (count === 0) {
+    statusEl.className = 'parse-status err';
+    statusEl.textContent = `couldn't parse any ${label}`;
+  } else if (result.errors && result.errors.length > 0 && result.errors[0] !== 'empty') {
+    statusEl.className = 'parse-status err';
+    statusEl.textContent = `parsed ${count} ${label}, ${result.errors.length} warning(s): ${result.errors[0]}`;
+    statusEl.title = result.errors.join('\n');
+  } else {
+    statusEl.className = 'parse-status ok';
+    statusEl.textContent = `parsed ${count} ${label}`;
+    statusEl.title = '';
+  }
+}
+
+document.getElementById('h-nmr').addEventListener('input', () => {
+  updateStatus('h-nmr', 'signals', parseHNMR);
+  autoCreateProtonLabels();
+  updatePreview();
+});
+
+document.getElementById('c-nmr').addEventListener('input', () => {
+  updateStatus('c-nmr', 'signals', parseCNMR);
+  autoCreateCarbonLabels();
+  updatePreview();
+});
+
+document.getElementById('ir').addEventListener('input', () => {
+  updateStatus('ir', 'peaks', parseIR);
+  autoCreateIRLabels();
+  updatePreview();
+});
+
+document.getElementById('ms').addEventListener('input', () => {
+  updateStatus('ms', 'fragments', parseMS);
+  autoCreateMSLabels();
+  updatePreview();
+});
+
+// =====================================================================
+// MS AUTO-CREATE MOLECULAR ION LABEL + HALOGEN ISOTOPE PATTERNS
+// =====================================================================
+
+// Pavia Table 8.6: relative intensities of isotope peaks for combinations
+// of bromine and chlorine. Keys are the label strings (Br, Cl, BrCl, etc.).
+// Values are arrays of [M, M+2, M+4, M+6] relative intensities.
+const HALOGEN_ISOTOPE_PATTERNS = {
+  'Br':     { offsets: [0, 2],       expected: [100, 97.7] },
+  'Br2':    { offsets: [0, 2, 4],    expected: [100, 195.0, 95.4] },
+  'Br3':    { offsets: [0, 2, 4, 6], expected: [100, 293.0, 286.0, 93.4] },
+  'Cl':     { offsets: [0, 2],       expected: [100, 32.6] },
+  'Cl2':    { offsets: [0, 2, 4],    expected: [100, 65.3, 10.6] },
+  'Cl3':    { offsets: [0, 2, 4, 6], expected: [100, 97.8, 31.9, 3.47] },
+  'BrCl':   { offsets: [0, 2, 4],    expected: [100, 130.0, 31.9] },
+  'Br2Cl':  { offsets: [0, 2, 4, 6], expected: [100, 228.0, 159.0, 31.2] },
+  'Cl2Br':  { offsets: [0, 2, 4, 6], expected: [100, 163.0, 74.4, 10.4] }
+};
+
+// Determine the halogen isotope pattern key from atom counts.
+// Returns null if no Cl or Br present, or if the combination exceeds the table.
+function getHalogenPatternKey(counts) {
+  const nCl = counts.Cl || 0;
+  const nBr = counts.Br || 0;
+  if (nCl === 0 && nBr === 0) return null;
+  const total = nCl + nBr;
+  if (total > 3) return null; // beyond Pavia table
+
+  // Build the key: Br first, then Cl, with counts > 1 shown as digits
+  let key = '';
+  if (nBr > 0) key += 'Br' + (nBr > 1 ? nBr : '');
+  if (nCl > 0) key += 'Cl' + (nCl > 1 ? nCl : '');
+  return HALOGEN_ISOTOPE_PATTERNS[key] ? key : null;
+}
+
+// Build a human-readable assignment string for an isotope peak.
+function isotopeAssignment(patternKey, offset) {
+  const hasBr = patternKey.includes('Br');
+  const hasCl = patternKey.includes('Cl');
+  let halogenDesc;
+  if (hasBr && hasCl) halogenDesc = 'bromine/chlorine';
+  else if (hasBr) halogenDesc = 'bromine';
+  else halogenDesc = 'chlorine';
+  return `${halogenDesc} isotope (M+${offset})`;
+}
+
+// When MS data is pasted, auto-create a "molecular ion" label and,
+// if the formula contains Cl/Br, auto-label the isotope peaks.
+// Uses the formula (if provided) to find the M+ peak by nominal mass;
+// otherwise falls back to highest m/z.
+function autoCreateMSLabels() {
+  const container = document.getElementById('ms-signal-labels');
+  // Skip if user already has labels (don't overwrite manual edits)
+  if (container.querySelectorAll('.signal-label-row').length > 0) return;
+
+  const result = parseMS(document.getElementById('ms').value);
+  if (result.fragments.length === 0) return;
+
+  const formula = document.getElementById('formula').value.trim();
+  const counts = parseFormula(formula);
+  let targetMz = counts ? computeNominalMass(counts) : null;
+
+  let mIonFragment;
+  if (targetMz !== null) {
+    let closest = null;
+    let minDiff = Infinity;
+    for (const f of result.fragments) {
+      const diff = Math.abs(f.mz - targetMz);
+      if (diff < minDiff && diff <= 1) { minDiff = diff; closest = f; }
+    }
+    mIonFragment = closest || result.fragments[0];
+  } else {
+    mIonFragment = result.fragments[0];
+  }
+
+  ensureLabelHeader('ms-signal-labels', 'ms');
+  addSignalLabelRow('ms', 'ms-signal-labels', {
+    key: 'M',
+    mz: mIonFragment.mz,
+    assignment: 'molecular ion'
+  });
+
+  // --- Halogen isotope peak auto-labeling ---
+  if (!counts) return;
+  const patternKey = getHalogenPatternKey(counts);
+  if (!patternKey) return;
+
+  const pattern = HALOGEN_ISOTOPE_PATTERNS[patternKey];
+  const mIonMz = mIonFragment.mz;
+  const mIonIntensity = mIonFragment.relative_intensity;
+  const warnings = [];
+
+  // Check if M+ itself is very weak (unstable molecular ion)
+  if (mIonIntensity !== undefined && mIonIntensity < 5) {
+    warnings.push(`M⁺ intensity is very low (${mIonIntensity}%); molecular ion may be unstable, isotope pattern may not be observable`);
+  }
+
+  // Look for each isotope peak (skip offset 0 which is M+ itself)
+  for (let i = 1; i < pattern.offsets.length; i++) {
+    const offset = pattern.offsets[i];
+    const expectedRelative = pattern.expected[i]; // relative to M+ = 100
+    const targetIsotopeMz = mIonMz + offset;
+
+    // Find matching peak in data
+    let isotopePeak = null;
+    let bestDiff = Infinity;
+    for (const f of result.fragments) {
+      const diff = Math.abs(f.mz - targetIsotopeMz);
+      if (diff < bestDiff && diff <= 1) { bestDiff = diff; isotopePeak = f; }
+    }
+
+    if (!isotopePeak) {
+      // Expected peak not found
+      if (expectedRelative >= 10) {
+        warnings.push(`Expected M+${offset} peak (~${expectedRelative}% of M⁺) not found at m/z ${targetIsotopeMz}; may be below detection threshold`);
+      }
+      // For very weak expected peaks (< 10%, e.g. Cl3 M+6 at 3.47%), silently skip
+      continue;
+    }
+
+    // Sanity check: compare observed intensity ratio to expected
+    if (mIonIntensity !== undefined && mIonIntensity > 0 && isotopePeak.relative_intensity !== undefined) {
+      const observedRatio = (isotopePeak.relative_intensity / mIonIntensity) * 100;
+      const tolerance = 0.40; // ±40% relative
+      const loBound = expectedRelative * (1 - tolerance);
+      const hiBound = expectedRelative * (1 + tolerance);
+      if (observedRatio < loBound || observedRatio > hiBound) {
+        warnings.push(`M+${offset} intensity ratio (${observedRatio.toFixed(1)}% of M⁺) differs from expected ${expectedRelative}% for ${patternKey} pattern`);
+      }
+    }
+
+    addSignalLabelRow('ms', 'ms-signal-labels', {
+      key: `M+${offset} (${patternKey})`,
+      mz: isotopePeak.mz,
+      assignment: isotopeAssignment(patternKey, offset)
+    });
+  }
+
+  // Display warnings in the MS status area
+  if (warnings.length > 0) {
+    const statusEl = document.getElementById('ms-status');
+    const existing = statusEl.textContent;
+    statusEl.className = 'parse-status err';
+    statusEl.textContent = existing + ' · ' + warnings[0];
+    statusEl.title = warnings.join('\n');
+  }
+}
+
+// =====================================================================
+// JCAMP FILE LOADING
+// =====================================================================
+
+document.getElementById('jcamp-file').addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('jcamp-status');
+  statusEl.className = 'parse-status empty';
+  statusEl.textContent = 'reading file…';
+
+  try {
+    const text = await file.text();
+    const jcamp = parseJCAMP(text);
+
+    if (jcamp.errors.length > 0 || jcamp.points.length === 0) {
+      statusEl.className = 'parse-status err';
+      statusEl.textContent = `parse failed: ${jcamp.errors.join(', ') || 'no data points found'}`;
+      return;
+    }
+
+    const isIR = jcamp.dataType && jcamp.dataType.toUpperCase().includes('INFRARED');
+    if (!isIR) {
+      statusEl.className = 'parse-status err';
+      statusEl.textContent = `data type is "${jcamp.dataType || 'unknown'}", expected INFRARED SPECTRUM`;
+      return;
+    }
+
+    const peaks = pickPeaksFromJCAMP(jcamp);
+    if (peaks.length === 0) {
+      statusEl.className = 'parse-status err';
+      statusEl.textContent = `parsed ${jcamp.points.length} data points, but no peaks detected`;
+      return;
+    }
+
+    const peakText = peaks
+      .sort((a, b) => b.wavenumber - a.wavenumber)
+      .map(p => `${p.wavenumber}\t${p.transmittance}`)
+      .join('\n');
+    document.getElementById('ir').value = peakText;
+
+    // Store the full continuous curve so the IR block in JSON can include it.
+    // This lets the spectrum renderer produce a faithful reproduction of the
+    // original spectrum rather than synthesizing from peak positions alone.
+    // Values stored as-is from the parsed JCAMP (after xFactor/yFactor);
+    // wavenumber rounded to 0.1 cm-1 (instrument precision limit).
+    window._lastJcampCurve = jcamp.points.map(p => ({
+      wavenumber: Math.round(p.x * 10) / 10,
+      transmittance: p.y
+    }));
+
+    document.getElementById('ir').dispatchEvent(new Event('input'));
+
+    statusEl.className = 'parse-status ok';
+    statusEl.textContent = `loaded "${jcamp.title || file.name}" · ${jcamp.points.length} data points · ${peaks.length} peaks`;
+  } catch (e) {
+    statusEl.className = 'parse-status err';
+    statusEl.textContent = `error reading file: ${e.message}`;
+  }
+});
+
+// =====================================================================
+// BUILD JSON
+// =====================================================================
+
+function slugify(s) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+function buildCompound() {
+  const name = document.getElementById('name').value.trim();
+  const formula = document.getElementById('formula').value.trim();
+  const smiles = document.getElementById('smiles').value.trim();
+  const iupac = document.getElementById('iupac').value.trim();
+  const mw = parseFloat(document.getElementById('mw').value);
+  const ihd = parseInt(document.getElementById('ihd').value);
+
+  const compound = {
+    id: slugify(name) || 'unnamed_compound',
+    name: name || 'unnamed',
+  };
+  if (iupac) compound.iupac_name = iupac;
+  if (smiles) compound.smiles = smiles;
+  if (formula) compound.formula = formula;
+  if (!isNaN(mw)) compound.molecular_weight = mw;
+  if (!isNaN(ihd)) compound.ihd = ihd;
+
+  // ---------- MS ----------
+  const msText = document.getElementById('ms').value;
+  const msLabels = collectSignalLabels('ms-signal-labels', 'ms');
+  if (msText.trim() || Object.keys(msLabels).length > 0) {
+    const block = {};
+    if (msText.trim()) {
+      const r = parseMS(msText);
+      if (r.fragments.length > 0) {
+        // raw_peaks contains only mz and relative_intensity; no descriptions/losses
+        block.raw_peaks = r.fragments.map(f => ({
+          mz: f.mz,
+          relative_intensity: f.relative_intensity
+        }));
+      }
+    }
+    if (Object.keys(msLabels).length > 0) block.signal_labels = msLabels;
+    if (Object.keys(block).length > 0) compound.MS = block;
+  }
+
+  // ---------- 13C NMR ----------
+  const cText = document.getElementById('c-nmr').value;
+  const cLabels = collectSignalLabels('c-signal-labels', 'c');
+  if (cText.trim() || Object.keys(cLabels).length > 0) {
+    const block = { solvent: document.getElementById('c-solvent').value.trim() || 'CDCl3' };
+    if (cText.trim()) {
+      const r = parseCNMR(cText);
+      if (r.signals.length > 0) {
+        // raw_peaks: ppm and intensity from parsed data
+        block.raw_peaks = r.signals.map(s => ({
+          ppm: s.shift,
+          intensity: s.intensity
+        }));
+      }
+    }
+    if (Object.keys(cLabels).length > 0) block.signal_labels = cLabels;
+    compound['13C_NMR'] = block;
+  }
+
+  // ---------- 1H NMR ----------
+  const hText = document.getElementById('h-nmr').value;
+  const hLabels = collectSignalLabels('h-signal-labels', 'h');
+
+  // Display J count warnings (if any) on the h-status element
+  const hWarnings = window._lastHCollectWarnings || [];
+  if (hWarnings.length > 0) {
+    const statusEl = document.getElementById('h-status');
+    if (statusEl) {
+      statusEl.className = 'parse-status err';
+      statusEl.textContent = `J count warnings: ${hWarnings.join('; ')}`;
+    }
+  }
+
+  if (hText.trim() || Object.keys(hLabels).length > 0) {
+    const block = { solvent: document.getElementById('h-solvent').value.trim() || 'CDCl3' };
+    if (hText.trim()) {
+      // Parse raw peaks directly from the textarea (hz, ppm, intensity per line)
+      const rawPeaks = [];
+      const lines = hText.split(/\n/).map(l => l.trim()).filter(Boolean);
+      for (const line of lines) {
+        if (!/^\d/.test(line)) continue;
+        const m = line.match(/^(\d+\.?\d*)[\s\t]+(\d+\.?\d*)[\s\t]+(\d+\.?\d*)$/);
+        if (m) {
+          rawPeaks.push({
+            hz: parseFloat(m[1]),
+            ppm: parseFloat(m[2]),
+            intensity: parseFloat(m[3])
+          });
+        }
+      }
+      if (rawPeaks.length > 0) block.raw_peaks = rawPeaks;
+    }
+    if (Object.keys(hLabels).length > 0) block.signal_labels = hLabels;
+    compound['1H_NMR'] = block;
+  }
+
+  // ---------- IR ----------
+  const irText = document.getElementById('ir').value;
+  const irLabels = collectSignalLabels('ir-signal-labels', 'ir');
+  if (irText.trim() || Object.keys(irLabels).length > 0) {
+    const block = {};
+    // If we have JCAMP curve data, use it as the raw source.
+    // Otherwise, use the parsed peak list from the textarea.
+    if (window._lastJcampCurve) {
+      block.curve = window._lastJcampCurve;
+    } else if (irText.trim()) {
+      const r = parseIR(irText);
+      if (r.peaks.length > 0) {
+        block.raw_peaks = r.peaks.map(p => ({
+          wavenumber: p.wavenumber,
+          transmittance: p.transmittance
+        }));
+      }
+    }
+    if (Object.keys(irLabels).length > 0) block.signal_labels = irLabels;
+    if (Object.keys(block).length > 0) compound.IR = block;
+  }
+
+  return compound;
+}
+
+function updatePreview() {
+  const compound = buildCompound();
+  const json = JSON.stringify(compound, null, 2);
+  document.getElementById('json-output').textContent = json;
+
+  const techniques = [];
+  if (compound.MS) {
+    const c = (compound.MS.raw_peaks || []).length;
+    techniques.push(c > 0 ? `MS (${c})` : 'MS');
+  }
+  if (compound['13C_NMR']?.raw_peaks) techniques.push(`¹³C (${compound['13C_NMR'].raw_peaks.length})`);
+  if (compound['1H_NMR']?.raw_peaks) techniques.push(`¹H raw (${compound['1H_NMR'].raw_peaks.length})`);
+  if (compound['1H_NMR']?.signal_labels) {
+    techniques.push(`¹H labels (${Object.keys(compound['1H_NMR'].signal_labels).length})`);
+  }
+  if (compound.IR?.raw_peaks) techniques.push(`IR (${compound.IR.raw_peaks.length})`);
+  else if (compound.IR?.curve) techniques.push(`IR curve (${compound.IR.curve.length} pts)`);
+
+  const warnings = [];
+
+  // 13C signal count check: number of labels (signals) should be ≤ formula C count
+  if (compound.formula && compound['13C_NMR']?.signal_labels) {
+    const counts = parseFormula(compound.formula);
+    const expectedC = counts ? (counts.C || 0) : null;
+    const observedC = Object.keys(compound['13C_NMR'].signal_labels).length;
+    if (expectedC !== null && observedC > expectedC) {
+      warnings.push(`¹³C has ${observedC} signals but formula has only ${expectedC} carbons`);
+    }
+  }
+
+  // MS sanity checks
+  if (compound.formula && compound.MS?.raw_peaks) {
+    const counts = parseFormula(compound.formula);
+    const expectedMz = counts ? computeNominalMass(counts) : null;
+    if (expectedMz !== null) {
+      // Each Cl or Br contributes +2 to the highest possible isotope peak;
+      // +1 for 13C satellite on the highest isotope cluster peak;
+      // +2 more if S is present (34S)
+      const halogenAllowance = 2 * ((counts.Cl || 0) + (counts.Br || 0));
+      let isotopeAllowance = halogenAllowance + 1; // +1 for 13C satellite
+      if (counts.S > 0) isotopeAllowance += 2;
+
+      const maxPlausible = expectedMz + isotopeAllowance;
+      const peaks = compound.MS.raw_peaks;
+      const overMaxPeaks = peaks.filter(f => f.mz > maxPlausible);
+      if (overMaxPeaks.length > 0) {
+        const maxObservedMz = Math.max(...overMaxPeaks.map(f => f.mz));
+        warnings.push(`MS has peak(s) at m/z up to ${maxObservedMz}, but expected M⁺ from formula is ${expectedMz} (max plausible with isotopes: ${maxPlausible}). May indicate impurity, adduct, or wrong compound.`);
+      }
+
+      const mIonInData = peaks.some(f => Math.abs(f.mz - expectedMz) <= 0.5);
+      if (!mIonInData && peaks.length > 0) {
+        warnings.push(`MS doesn't show a peak near expected M⁺ of ${expectedMz} (from formula). M⁺ may be too unstable to observe.`);
+      }
+    }
+  }
+
+  document.getElementById('stats').textContent = techniques.length > 0
+    ? techniques.join(' · ')
+    : 'no spectral data';
+
+  const warningEl = document.getElementById('preview-warnings');
+  if (warnings.length > 0) {
+    warningEl.innerHTML = warnings.map(w => `<div class="parse-status err" style="margin-bottom:0.3rem;">⚠ ${w}</div>`).join('');
+  } else {
+    warningEl.innerHTML = '';
+  }
+}
+
+document.getElementById('generate').addEventListener('click', updatePreview);
+
+document.getElementById('download').addEventListener('click', () => {
+  const compound = buildCompound();
+  const json = JSON.stringify(compound, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = compound.id + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// =====================================================================
+// CLEAR + LOAD EXAMPLE
+// =====================================================================
+
+function clearAllFields() {
+  window._lastJcampCurve = null;
+  document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(el => {
+    if (el.id === 'h-solvent' || el.id === 'c-solvent') el.value = 'CDCl3';
+    else if (el.id === 'ir-threshold') el.value = '20';
+    else el.value = '';
+  });
+  // Remove any auto-created label headers
+  ['h', 'c', 'ir', 'ms'].forEach(prefix => {
+    const header = document.getElementById(`${prefix}-signal-labels-header`);
+    if (header) header.remove();
+    const container = document.getElementById(`${prefix}-signal-labels`);
+    if (container) container.innerHTML = '';
+  });
+  document.getElementById('h-signal-labels').innerHTML =
+    '<p class="help-mini">Auto-created from ¹H multiplets. Edit shift, multiplicity, J, integration directly.</p>';
+  document.getElementById('c-signal-labels').innerHTML =
+    '<p class="help-mini">Auto-created from ¹³C signals. Set equiv &gt; 1 for symmetric molecules (e.g., 2 for ipso C in p-xylene).</p>';
+  document.getElementById('ir-signal-labels').innerHTML =
+    '<p class="help-mini">Auto-created for peaks below the threshold. Edit fields or add new rows.</p>';
+  document.getElementById('ms-signal-labels').innerHTML =
+    '<p class="help-mini">Molecular ion and halogen isotope peaks (Cl/Br) auto-labeled when MS data is pasted.</p>';
+  ['h', 'c', 'ir', 'ms'].forEach(prefix => {
+    const s = document.getElementById(prefix + '-status');
+    if (s) { s.className = 'parse-status empty'; s.textContent = 'no data yet'; }
+  });
+  document.getElementById('smiles-status').className = 'parse-status empty';
+  document.getElementById('smiles-status').textContent = 'no structure yet';
+  document.getElementById('jcamp-status').className = 'parse-status empty';
+  document.getElementById('jcamp-status').textContent = 'no JCAMP file loaded';
+  document.getElementById('iupac-status').style.display = 'none';
+  document.getElementById('h-integration-target').innerHTML = '';
+  document.getElementById('json-output').textContent = '// Cleared. Start fresh!';
+  document.getElementById('stats').textContent = 'no compound built';
+  document.getElementById('preview-warnings').innerHTML = '';
+}
+
+document.getElementById('clear-all').addEventListener('click', () => {
+  if (!confirm('Clear all fields?')) return;
+  clearAllFields();
+});
+
+document.getElementById('load-example').addEventListener('click', () => {
+  clearAllFields();
+  document.getElementById('name').value = 'ethyl acetate';
+  document.getElementById('formula').value = 'C4H8O2';
+  updateFormulaDerived();
+  document.getElementById('iupac').value = 'ethyl acetate';
+  document.getElementById('smiles').value = 'CCOC(=O)C';
+  validateSmiles();
+
+  document.getElementById('h-nmr').value = `Hz\tppm\tInt.
+
+1658.39\t4.148\t73
+1651.25\t4.130\t219
+1644.10\t4.112\t221
+1636.96\t4.095\t75
+815.98\t2.041\t1000
+510.07\t1.276\t332
+502.99\t1.258\t652
+495.79\t1.240\t329`;
+
+  document.getElementById('c-nmr').value = `ppm\tInt.\tAssign.
+
+171.08\t527\t4
+60.44\t1000\t3
+21.00\t571\t2
+14.28\t857\t1`;
+
+  document.getElementById('ir').value = `3462\t81
+2983\t33
+2940\t55
+2908\t62
+2877\t74
+1889\t86
+1743\t4
+1480\t60
+1466\t55
+1448\t50
+1393\t60
+1374\t13
+1350\t49
+1301\t52
+1243\t6
+1160\t77
+1111\t84
+1098\t63
+1048\t10
+939\t84
+917\t77
+847\t64
+786\t74
+634\t62
+608\t60
+457\t81`;
+
+  document.getElementById('ms').value = `14.0\t1.3
+15.0\t6.2
+18.0\t2.1
+26.0\t1.4
+27.0\t6.5
+28.0\t2.5
+29.0\t13.7
+31.0\t1.0
+42.0\t4.9
+43.0\t100.0
+44.0\t2.7
+45.0\t14.7
+61.0\t14.9
+70.0\t9.9
+73.0\t4.7
+88.0\t5.1`;
+
+  // Fire input events to trigger parsing + auto-create + preview
+  ['h-nmr', 'c-nmr', 'ir', 'ms'].forEach(id => {
+    document.getElementById(id).dispatchEvent(new Event('input'));
+  });
+});
+
+// =====================================================================
+// IMPORT EXISTING JSON FILE
+// =====================================================================
+
+document.getElementById('open-file').addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Confirm if there's existing work to be replaced
+  if (hasUnsavedWork()) {
+    const ok = confirm(
+      'Opening this file will replace all current data in the form. Continue?'
+    );
+    if (!ok) {
+      event.target.value = '';
+      return;
+    }
+  }
+
+  try {
+    const text = await file.text();
+    const compound = JSON.parse(text);
+    loadCompoundIntoForm(compound);
+  } catch (e) {
+    alert('Could not open file: ' + e.message);
+  }
+  event.target.value = '';
+});
+
+// Check whether the form has any user-entered content worth confirming about.
+// Returns true if any data-bearing field is non-empty.
+function hasUnsavedWork() {
+  const fieldsToCheck = ['name', 'formula', 'smiles', 'iupac', 'h-nmr', 'c-nmr', 'ir', 'ms'];
+  for (const id of fieldsToCheck) {
+    const el = document.getElementById(id);
+    if (el && el.value.trim()) return true;
+  }
+  // Check for any signal label rows with descriptions
+  const labelRows = document.querySelectorAll('.signal-label-row');
+  for (const row of labelRows) {
+    const desc = row.querySelector('.label-desc');
+    if (desc && desc.value.trim()) return true;
+  }
+  return false;
+}
+
+function loadCompoundIntoForm(compound) {
+  clearAllFields();
+
+  // Identity
+  if (compound.name) document.getElementById('name').value = compound.name;
+  if (compound.formula) {
+    document.getElementById('formula').value = compound.formula;
+    updateFormulaDerived();
+  }
+  if (compound.smiles) {
+    document.getElementById('smiles').value = compound.smiles;
+    validateSmiles();
+  }
+  if (compound.iupac_name) document.getElementById('iupac').value = compound.iupac_name;
+
+  // ---------- MS ----------
+  if (compound.MS) {
+    if (compound.MS.raw_peaks && compound.MS.raw_peaks.length > 0) {
+      const text = compound.MS.raw_peaks
+        .map(p => `${p.mz}\t${p.relative_intensity ?? ''}`)
+        .join('\n');
+      document.getElementById('ms').value = text;
+    }
+    // Build label rows from signal_labels
+    if (compound.MS.signal_labels) {
+      ensureLabelHeader('ms-signal-labels', 'ms');
+      const container = document.getElementById('ms-signal-labels');
+      container.innerHTML = '<p class="help-mini">Loaded from file. Edit fields directly.</p>';
+      for (const [key, info] of Object.entries(compound.MS.signal_labels)) {
+        addSignalLabelRow('ms', 'ms-signal-labels', {
+          key,
+          mz: info.mz,
+          assignment: info.assignment || ''
+        });
+      }
+    }
+    updateStatus('ms', 'fragments', parseMS);
+  }
+
+  // ---------- 13C NMR ----------
+  if (compound['13C_NMR']) {
+    if (compound['13C_NMR'].solvent) {
+      document.getElementById('c-solvent').value = compound['13C_NMR'].solvent;
+    }
+    if (compound['13C_NMR'].raw_peaks && compound['13C_NMR'].raw_peaks.length > 0) {
+      const text = compound['13C_NMR'].raw_peaks
+        .map(p => `${p.ppm}\t${p.intensity ?? 0}`)
+        .join('\n');
+      document.getElementById('c-nmr').value = text;
+    }
+    if (compound['13C_NMR'].signal_labels) {
+      ensureLabelHeader('c-signal-labels', 'c');
+      const container = document.getElementById('c-signal-labels');
+      container.innerHTML = '<p class="help-mini">Loaded from file. Edit fields directly.</p>';
+      for (const [key, info] of Object.entries(compound['13C_NMR'].signal_labels)) {
+        addSignalLabelRow('c', 'c-signal-labels', {
+          key,
+          shift: info.shift,
+          equivalent_count: info.equivalent_count ?? 1,
+          assignment: info.assignment || ''
+        });
+      }
+      updateStatus('c-nmr', 'signals', parseCNMR);
+    }
+  }
+
+  // ---------- 1H NMR ----------
+  if (compound['1H_NMR']) {
+    if (compound['1H_NMR'].solvent) {
+      document.getElementById('h-solvent').value = compound['1H_NMR'].solvent;
+    }
+    if (compound['1H_NMR'].raw_peaks && compound['1H_NMR'].raw_peaks.length > 0) {
+      // Reconstruct the SDBS-style tab-separated text
+      const lines = ['Hz\tppm\tInt.', ''];
+      compound['1H_NMR'].raw_peaks.forEach(p => {
+        lines.push(`${p.hz.toFixed(2)}\t${p.ppm.toFixed(3)}\t${Math.round(p.intensity)}`);
+      });
+      document.getElementById('h-nmr').value = lines.join('\n');
+    }
+    if (compound['1H_NMR'].signal_labels) {
+      ensureLabelHeader('h-signal-labels', 'h');
+      const container = document.getElementById('h-signal-labels');
+      container.innerHTML = '<p class="help-mini">Loaded from file. Edit fields directly.</p>';
+      for (const [key, info] of Object.entries(compound['1H_NMR'].signal_labels)) {
+        addSignalLabelRow('h', 'h-signal-labels', {
+          key,
+          shift: info.shift,
+          multiplicity: info.multiplicity,
+          j_hz: info.j_hz,
+          integration: info.integration,
+          assignment: info.assignment || ''
+        });
+      }
+      updateStatus('h-nmr', 'signals', parseHNMR);
+      refreshIntegrationTarget();
+    }
+  }
+
+  // ---------- IR ----------
+  if (compound.IR) {
+    // Restore JCAMP curve if present
+    if (compound.IR.curve) {
+      window._lastJcampCurve = compound.IR.curve;
+    }
+    if (compound.IR.raw_peaks && compound.IR.raw_peaks.length > 0) {
+      const text = compound.IR.raw_peaks
+        .map(p => `${p.wavenumber}\t${p.transmittance}`)
+        .join('\n');
+      document.getElementById('ir').value = text;
+    }
+    if (compound.IR.signal_labels) {
+      ensureLabelHeader('ir-signal-labels', 'ir');
+      const container = document.getElementById('ir-signal-labels');
+      container.innerHTML = '<p class="help-mini">Loaded from file. Edit fields directly.</p>';
+      for (const [key, info] of Object.entries(compound.IR.signal_labels)) {
+        addSignalLabelRow('ir', 'ir-signal-labels', {
+          key,
+          wavenumber: info.wavenumber,
+          intensity: info.intensity || 'strong',
+          assignment: info.assignment || ''
+        });
+      }
+      updateStatus('ir', 'peaks', parseIR);
+    }
+  }
+
+  updatePreview();
+}
+
+</script>
+</body>
+</html>
