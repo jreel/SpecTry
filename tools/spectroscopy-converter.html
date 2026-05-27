@@ -1831,12 +1831,10 @@ const IR_REFERENCE_TABLE = [
   // ---- C-H Alkane ----
   { bond:'C-H', fg:'alkane', vib:'stretch', range:[2840,3000], int:'s', cat:'alkane', specificity:1,
     label:'C-H stretch (alkane, sp³)' },
-  { bond:'C-H', fg:'alkane, methyl', vib:'bend (asym.)', range:[1440,1470], int:'m', cat:'alkane', specificity:2,
-    label:'C-H bend (methyl, asymmetric)', requires: c => c.C >= 1 },
+  { bond:'C-H', fg:'alkane, methyl / methylene', vib:'bend', range:[1440,1480], int:'m', cat:'alkane', specificity:2,
+    label:'C-H bend (methyl / methylene)', requires: c => c.C >= 1 },
   { bond:'C-H', fg:'alkane, methyl', vib:'bend (umbrella)', range:[1365,1385], int:'m', cat:'alkane', specificity:2,
     label:'C-H bend (methyl, umbrella)', requires: c => c.C >= 1 },
-  { bond:'C-H', fg:'alkane, methylene', vib:'bend', range:[1440,1480], int:'m', cat:'alkane', specificity:2,
-    label:'C-H bend (methylene, CH₂)', requires: c => c.C >= 2 },
   { bond:'C-H', fg:'alkane, methylene, long chain', vib:'rock', range:[710,730], int:'w', cat:'alkane', specificity:3,
     label:'CH₂ rock (long chain)', requires: c => c.C >= 4 },
 
@@ -1899,7 +1897,7 @@ const IR_REFERENCE_TABLE = [
     label:'aldehyde C-H bend', requires: c => c.O > 0 && c.ihd >= 1 },
 
   // ---- C-C ----
-  { bond:'C-C', fg:'alkane', vib:'stretch', range:[800,1200], int:'w', cat:'alkane', specificity:0,
+  { bond:'C-C', fg:'alkane', vib:'stretch', range:[750,1200], int:'w', cat:'alkane', specificity:0,
     label:'C-C stretch (alkane)' },
   { bond:'C-C=O', fg:'aryl-carbonyl', vib:'stretch', range:[800,900], int:'s,b', cat:'aromatic', specificity:2,
     label:'aryl-carbonyl C-C stretch', requires: c => c.ihd >= 4 && c.O > 0 },
@@ -1943,6 +1941,8 @@ const IR_REFERENCE_TABLE = [
     label:'C-Cl stretch (aryl chloride)', requires: c => c.Cl > 0 && c.ihd >= 4 },
   { bond:'C-Cl', fg:'acid chloride', vib:'stretch', range:[550,730], int:'s-m', cat:'acyl_cl', specificity:2,
     label:'C-Cl stretch (acid chloride)', requires: c => c.Cl > 0 && c.O > 0 },
+  { bond:'CH₂X', fg:'alkyl halide (terminal)', vib:'wag', range:[1150,1300], int:'m-w', cat:'halide', specificity:1,
+    label:'CH₂X wag (terminal alkyl halide)', requires: c => _hasHalogen(c) },
   { bond:'C-H', fg:'alkyl chloride', vib:'wag', range:[1230,1300], int:'m-w', cat:'halide', specificity:2,
     label:'C-H wag (alkyl chloride)', requires: c => c.Cl > 0 },
   { bond:'C-Br', fg:'alkyl bromide', vib:'stretch', range:[510,690], int:'s', cat:'halide', specificity:2,
