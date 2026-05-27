@@ -984,6 +984,15 @@ Hz    ppm    Int.
 </div>
 <button class="small-btn" id="add-ir-label">+ add IR label</button>
 
+<div style="margin-top: 0.75rem;">
+  <button class="small-btn" id="toggle-ir-preview" type="button">👁 Toggle IR Preview</button>
+  <div id="ir-preview-container" style="display:none; margin-top: 0.5rem; border: 1px solid #e0ddd6; border-radius: 4px; overflow: hidden;">
+    <iframe id="ir-preview-frame" src="ir-viewer-prototype.html?embed"
+      style="width:100%; height:420px; border:none; background:white;">
+    </iframe>
+  </div>
+</div>
+
 <label style="margin-top:0.75rem;">Peak data <span class="computed-note">(wavenumber + %T; lower T = stronger)</span></label>
 <textarea id="ir" rows="8" placeholder="If loaded from JCAMP-DX: peaks are auto-detected as local minima.
 
@@ -3870,6 +3879,34 @@ function loadCompoundIntoForm(compound) {
 
   updatePreview();
 }
+
+// --------------- IR Preview ---------------
+// Toggle visibility
+document.getElementById('toggle-ir-preview').addEventListener('click', () => {
+  const container = document.getElementById('ir-preview-container');
+  const visible = container.style.display !== 'none';
+  container.style.display = visible ? 'none' : 'block';
+  if (!visible) updateIRPreview();
+});
+
+// Send current compound data to the IR preview iframe
+function updateIRPreview() {
+  const container = document.getElementById('ir-preview-container');
+  if (container.style.display === 'none') return;
+
+  const frame = document.getElementById('ir-preview-frame');
+  if (!frame || !frame.contentWindow) return;
+
+  const compound = buildCompound();
+  frame.contentWindow.postMessage({ type: 'render-ir', compound }, '*');
+}
+
+// Hook into updatePreview so IR preview stays in sync
+const _origUpdatePreview = updatePreview;
+updatePreview = function() {
+  _origUpdatePreview();
+  updateIRPreview();
+};
 
 </script>
 </body>

@@ -524,7 +524,36 @@ async function loadCompound(id) {
 
 const select = document.getElementById('compound-select');
 select.addEventListener('change', () => loadCompound(select.value));
-loadCompound(select.value);
+
+// Embed mode: when loaded in an iframe with ?embed, hide the UI chrome
+// and listen for compound data via postMessage
+const params = new URLSearchParams(window.location.search);
+const isEmbed = params.has('embed');
+
+if (isEmbed) {
+  // Hide dropdown, demo labels, and second chart
+  document.querySelectorAll('h2, .demo-note, #compound-select')
+    .forEach(el => el.style.display = 'none');
+  document.querySelector('label[for="compound-select"]').style.display = 'none';
+  document.getElementById('ir-chart-bare').style.display = 'none';
+  document.body.style.padding = '0.5rem';
+
+  window.addEventListener('message', (event) => {
+    const msg = event.data;
+    if (msg && msg.type === 'render-ir' && msg.compound) {
+      const data = msg.compound;
+      if (!data.IR || !data.IR.curve || data.IR.curve.length === 0) {
+        document.getElementById('ir-chart-full').innerHTML =
+          '<p style="color:var(--error);padding:0.5rem;">No IR curve data.</p>';
+        return;
+      }
+      renderIR('#ir-chart-full', data);
+    }
+  });
+} else {
+  // Normal standalone mode: load from file
+  loadCompound(select.value);
+}
 </script>
 </body>
 </html>
