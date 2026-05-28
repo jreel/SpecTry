@@ -3970,46 +3970,31 @@
         "intensity": "strong"
       },
       "y": {
-        "assignment": "C-H stretch (alkane, sp³)",
-        "wavenumber": 2935,
-        "intensity": "strong"
-      },
-      "x": {
-        "assignment": "C-H stretch (alkane, sp³)",
-        "wavenumber": 2877,
-        "intensity": "medium"
-      },
-      "w": {
-        "assignment": "C-H bend (methylene)",
+        "assignment": "C-H bend (methyl or methylene)",
         "wavenumber": 1458,
         "intensity": "medium"
       },
-      "v": {
-        "assignment": "C-H bend (methyl)",
-        "wavenumber": 1435,
-        "intensity": "medium"
-      },
-      "u": {
-        "assignment": "C-H wag (alkyl bromide)",
+      "x": {
+        "assignment": "C-H wag (alkyl halide, terminal)",
         "wavenumber": 1284,
         "intensity": "medium"
       },
-      "t": {
+      "w": {
         "assignment": "C-H wag (alkyl bromide)",
         "wavenumber": 1227,
         "intensity": "strong"
       },
-      "s": {
-        "assignment": "C-C stretch (alkane)",
+      "v": {
+        "assignment": "C-C stretch (alkyl)",
         "wavenumber": 775,
         "intensity": "medium"
       },
-      "r": {
+      "u": {
         "assignment": "C-Br stretch (alkyl bromide)",
         "wavenumber": 648,
         "intensity": "medium"
       },
-      "q": {
+      "t": {
         "assignment": "C-Br stretch (alkyl bromide)",
         "wavenumber": 563,
         "intensity": "medium"
