@@ -286,8 +286,10 @@ function renderIR(container, compound, options = {}) {
     .text('Transmittance (%)');
 
   // Smooth the curve to counteract quantized transmittance data.
-  // Gaussian kernel with radius proportional to data density.
-  const smoothedCurve = gaussianSmooth(curve, tScale, 4);
+  // Adaptive radius: target ~8 cm⁻¹ smoothing window regardless of point density.
+  const avgSpacing = Math.abs(curve[0].wavenumber - curve[curve.length - 1].wavenumber) / curve.length;
+  const smoothRadius = Math.max(2, Math.round(8 / avgSpacing));
+  const smoothedCurve = gaussianSmooth(curve, tScale, smoothRadius);
 
   // Draw the IR trace
   const clipId = 'plot-clip-' + container.replace(/[^a-zA-Z0-9]/g, '');
