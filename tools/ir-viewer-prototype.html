@@ -294,7 +294,7 @@ function renderIR(container, compound, options = {}) {
   const line = d3.line()
     .x(d => x(d.wavenumber))
     .y(d => y(d.t))
-    .curve(d3.curveLinear);
+    .curve(d3.curveMonotoneX);
 
   g.append('path')
     .datum(smoothedCurve)
