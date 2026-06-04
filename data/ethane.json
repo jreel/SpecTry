@@ -1,0 +1,3628 @@
+{
+  "id": "ethane",
+  "name": "ethane",
+  "iupac_name": "ethane",
+  "smiles": "CC",
+  "formula": "C2H6",
+  "molecular_weight": 30.07,
+  "ihd": 0,
+  "MS": {
+    "raw_peaks": [
+      {
+        "mz": 30,
+        "relative_intensity": 26
+      },
+      {
+        "mz": 29,
+        "relative_intensity": 22
+      },
+      {
+        "mz": 28,
+        "relative_intensity": 100
+      },
+      {
+        "mz": 27,
+        "relative_intensity": 34
+      },
+      {
+        "mz": 26,
+        "relative_intensity": 24
+      },
+      {
+        "mz": 25,
+        "relative_intensity": 4
+      },
+      {
+        "mz": 15,
+        "relative_intensity": 5
+      },
+      {
+        "mz": 14,
+        "relative_intensity": 4
+      },
+      {
+        "mz": 13,
+        "relative_intensity": 1
+      }
+    ],
+    "signal_labels": {
+      "M": {
+        "assignment": "molecular ion",
+        "mz": 30
+      }
+    }
+  },
+  "13C_NMR": {
+    "solvent": "CDCl3",
+    "raw_peaks": [
+      {
+        "ppm": 6.51,
+        "intensity": 1000
+      }
+    ],
+    "signal_labels": {
+      "a": {
+        "assignment": "CH3",
+        "shift": 6.51,
+        "equivalent_count": 2
+      }
+    }
+  },
+  "1H_NMR": {
+    "solvent": "CDCl3",
+    "signal_labels": {
+      "a": {
+        "assignment": "CH3",
+        "shift": 0.77,
+        "multiplicity": "s",
+        "integration": 1
+      }
+    }
+  },
+  "IR": {
+    "curve": [
+      {
+        "wavenumber": 450,
+        "transmittance": 0.01316412
+      },
+      {
+        "wavenumber": 454,
+        "transmittance": 0.012080015999999999
+      },
+      {
+        "wavenumber": 458,
+        "transmittance": 0.00542052
+      },
+      {
+        "wavenumber": 462,
+        "transmittance": 0.009524628
+      },
+      {
+        "wavenumber": 466,
+        "transmittance": 0.009137448
+      },
+      {
+        "wavenumber": 470,
+        "transmittance": 0.0044912879999999995
+      },
+      {
+        "wavenumber": 474,
+        "transmittance": 0.005885136
+      },
+      {
+        "wavenumber": 478,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 482,
+        "transmittance": 0.004297698
+      },
+      {
+        "wavenumber": 486,
+        "transmittance": 0.0068530859999999996
+      },
+      {
+        "wavenumber": 490,
+        "transmittance": 0.005343084
+      },
+      {
+        "wavenumber": 494,
+        "transmittance": 0.004762314
+      },
+      {
+        "wavenumber": 498,
+        "transmittance": 0.004917186
+      },
+      {
+        "wavenumber": 502,
+        "transmittance": 0.006156162
+      },
+      {
+        "wavenumber": 506,
+        "transmittance": 0.004917186
+      },
+      {
+        "wavenumber": 510,
+        "transmittance": 0.0048397499999999994
+      },
+      {
+        "wavenumber": 514,
+        "transmittance": 0.005536673999999999
+      },
+      {
+        "wavenumber": 518,
+        "transmittance": 0.005188211999999999
+      },
+      {
+        "wavenumber": 522,
+        "transmittance": 0.002865132
+      },
+      {
+        "wavenumber": 526,
+        "transmittance": 0.00232308
+      },
+      {
+        "wavenumber": 530,
+        "transmittance": 0.005110776
+      },
+      {
+        "wavenumber": 534,
+        "transmittance": 0.005188211999999999
+      },
+      {
+        "wavenumber": 538,
+        "transmittance": 0.004297698
+      },
+      {
+        "wavenumber": 542,
+        "transmittance": 0.004297698
+      },
+      {
+        "wavenumber": 546,
+        "transmittance": 0.005226929999999999
+      },
+      {
+        "wavenumber": 550,
+        "transmittance": 0.0026328239999999998
+      },
+      {
+        "wavenumber": 554,
+        "transmittance": 0.00658206
+      },
+      {
+        "wavenumber": 558,
+        "transmittance": 0.003987954
+      },
+      {
+        "wavenumber": 562,
+        "transmittance": 0.003833082
+      },
+      {
+        "wavenumber": 566,
+        "transmittance": 0.00503334
+      },
+      {
+        "wavenumber": 570,
+        "transmittance": 0.005691546
+      },
+      {
+        "wavenumber": 574,
+        "transmittance": 0.003987954
+      },
+      {
+        "wavenumber": 578,
+        "transmittance": 0.005923853999999999
+      },
+      {
+        "wavenumber": 582,
+        "transmittance": 0.00503334
+      },
+      {
+        "wavenumber": 586,
+        "transmittance": 0.0040653899999999995
+      },
+      {
+        "wavenumber": 590,
+        "transmittance": 0.004375134
+      },
+      {
+        "wavenumber": 594,
+        "transmittance": 0.00290385
+      },
+      {
+        "wavenumber": 598,
+        "transmittance": 0.005536673999999999
+      },
+      {
+        "wavenumber": 602,
+        "transmittance": 0.004026671999999999
+      },
+      {
+        "wavenumber": 606,
+        "transmittance": 0.003639492
+      },
+      {
+        "wavenumber": 610,
+        "transmittance": 0.004723596
+      },
+      {
+        "wavenumber": 614,
+        "transmittance": 0.004801031999999999
+      },
+      {
+        "wavenumber": 618,
+        "transmittance": 0.004375134
+      },
+      {
+        "wavenumber": 622,
+        "transmittance": 0.0044525699999999994
+      },
+      {
+        "wavenumber": 626,
+        "transmittance": 0.005846418
+      },
+      {
+        "wavenumber": 630,
+        "transmittance": 0.00464616
+      },
+      {
+        "wavenumber": 634,
+        "transmittance": 0.00542052
+      },
+      {
+        "wavenumber": 638,
+        "transmittance": 0.0041041079999999995
+      },
+      {
+        "wavenumber": 642,
+        "transmittance": 0.0044525699999999994
+      },
+      {
+        "wavenumber": 646,
+        "transmittance": 0.0048784679999999995
+      },
+      {
+        "wavenumber": 650,
+        "transmittance": 0.004762314
+      },
+      {
+        "wavenumber": 654,
+        "transmittance": 0.0038718
+      },
+      {
+        "wavenumber": 658,
+        "transmittance": 0.003987954
+      },
+      {
+        "wavenumber": 662,
+        "transmittance": 0.004607442
+      },
+      {
+        "wavenumber": 666,
+        "transmittance": 0.00619488
+      },
+      {
+        "wavenumber": 670,
+        "transmittance": 0.004955904
+      },
+      {
+        "wavenumber": 674,
+        "transmittance": 0.0056528279999999995
+      },
+      {
+        "wavenumber": 678,
+        "transmittance": 0.004955904
+      },
+      {
+        "wavenumber": 682,
+        "transmittance": 0.005072058
+      },
+      {
+        "wavenumber": 686,
+        "transmittance": 0.004220262
+      },
+      {
+        "wavenumber": 690,
+        "transmittance": 0.005188211999999999
+      },
+      {
+        "wavenumber": 694,
+        "transmittance": 0.004375134
+      },
+      {
+        "wavenumber": 698,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 702,
+        "transmittance": 0.0020520539999999998
+      },
+      {
+        "wavenumber": 706,
+        "transmittance": 0.003987954
+      },
+      {
+        "wavenumber": 710,
+        "transmittance": 0.003639492
+      },
+      {
+        "wavenumber": 714,
+        "transmittance": 0.004801031999999999
+      },
+      {
+        "wavenumber": 718,
+        "transmittance": 0.004375134
+      },
+      {
+        "wavenumber": 722,
+        "transmittance": 0.003949236
+      },
+      {
+        "wavenumber": 726,
+        "transmittance": 0.003252312
+      },
+      {
+        "wavenumber": 730,
+        "transmittance": 0.004801031999999999
+      },
+      {
+        "wavenumber": 734,
+        "transmittance": 0.004530006
+      },
+      {
+        "wavenumber": 738,
+        "transmittance": 0.004762314
+      },
+      {
+        "wavenumber": 742,
+        "transmittance": 0.005072058
+      },
+      {
+        "wavenumber": 746,
+        "transmittance": 0.005846418
+      },
+      {
+        "wavenumber": 750,
+        "transmittance": 0.0058077
+      },
+      {
+        "wavenumber": 754,
+        "transmittance": 0.00619488
+      },
+      {
+        "wavenumber": 758,
+        "transmittance": 0.007124111999999999
+      },
+      {
+        "wavenumber": 762,
+        "transmittance": 0.007666164
+      },
+      {
+        "wavenumber": 766,
+        "transmittance": 0.008672832
+      },
+      {
+        "wavenumber": 770,
+        "transmittance": 0.009756935999999999
+      },
+      {
+        "wavenumber": 774,
+        "transmittance": 0.010686168
+      },
+      {
+        "wavenumber": 778,
+        "transmittance": 0.010763604
+      },
+      {
+        "wavenumber": 782,
+        "transmittance": 0.011886425999999999
+      },
+      {
+        "wavenumber": 786,
+        "transmittance": 0.013047966
+      },
+      {
+        "wavenumber": 790,
+        "transmittance": 0.014248223999999999
+      },
+      {
+        "wavenumber": 794,
+        "transmittance": 0.015216173999999999
+      },
+      {
+        "wavenumber": 798,
+        "transmittance": 0.016687458
+      },
+      {
+        "wavenumber": 802,
+        "transmittance": 0.018042588
+      },
+      {
+        "wavenumber": 806,
+        "transmittance": 0.019630026
+      },
+      {
+        "wavenumber": 810,
+        "transmittance": 0.020752847999999997
+      },
+      {
+        "wavenumber": 814,
+        "transmittance": 0.022611311999999998
+      },
+      {
+        "wavenumber": 818,
+        "transmittance": 0.022030542
+      },
+      {
+        "wavenumber": 822,
+        "transmittance": 0.023656697999999997
+      },
+      {
+        "wavenumber": 826,
+        "transmittance": 0.025902342
+      },
+      {
+        "wavenumber": 830,
+        "transmittance": 0.02497311
+      },
+      {
+        "wavenumber": 834,
+        "transmittance": 0.025979778
+      },
+      {
+        "wavenumber": 838,
+        "transmittance": 0.025399007999999997
+      },
+      {
+        "wavenumber": 842,
+        "transmittance": 0.022650029999999998
+      },
+      {
+        "wavenumber": 846,
+        "transmittance": 0.023501826
+      },
+      {
+        "wavenumber": 850,
+        "transmittance": 0.022146695999999997
+      },
+      {
+        "wavenumber": 854,
+        "transmittance": 0.02206926
+      },
+      {
+        "wavenumber": 858,
+        "transmittance": 0.019630026
+      },
+      {
+        "wavenumber": 862,
+        "transmittance": 0.019358999999999998
+      },
+      {
+        "wavenumber": 866,
+        "transmittance": 0.018236178
+      },
+      {
+        "wavenumber": 870,
+        "transmittance": 0.017113356
+      },
+      {
+        "wavenumber": 874,
+        "transmittance": 0.0154872
+      },
+      {
+        "wavenumber": 878,
+        "transmittance": 0.014364377999999999
+      },
+      {
+        "wavenumber": 882,
+        "transmittance": 0.013009248
+      },
+      {
+        "wavenumber": 886,
+        "transmittance": 0.011537964
+      },
+      {
+        "wavenumber": 890,
+        "transmittance": 0.01064745
+      },
+      {
+        "wavenumber": 894,
+        "transmittance": 0.009756935999999999
+      },
+      {
+        "wavenumber": 898,
+        "transmittance": 0.008479242
+      },
+      {
+        "wavenumber": 902,
+        "transmittance": 0.007782318
+      },
+      {
+        "wavenumber": 906,
+        "transmittance": 0.007085393999999999
+      },
+      {
+        "wavenumber": 910,
+        "transmittance": 0.0064659059999999996
+      },
+      {
+        "wavenumber": 914,
+        "transmittance": 0.00619488
+      },
+      {
+        "wavenumber": 918,
+        "transmittance": 0.005149493999999999
+      },
+      {
+        "wavenumber": 922,
+        "transmittance": 0.0052656479999999995
+      },
+      {
+        "wavenumber": 926,
+        "transmittance": 0.004530006
+      },
+      {
+        "wavenumber": 930,
+        "transmittance": 0.004297698
+      },
+      {
+        "wavenumber": 934,
+        "transmittance": 0.004607442
+      },
+      {
+        "wavenumber": 938,
+        "transmittance": 0.0041041079999999995
+      },
+      {
+        "wavenumber": 942,
+        "transmittance": 0.004220262
+      },
+      {
+        "wavenumber": 946,
+        "transmittance": 0.003833082
+      },
+      {
+        "wavenumber": 950,
+        "transmittance": 0.004220262
+      },
+      {
+        "wavenumber": 954,
+        "transmittance": 0.0037169279999999996
+      },
+      {
+        "wavenumber": 958,
+        "transmittance": 0.003639492
+      },
+      {
+        "wavenumber": 962,
+        "transmittance": 0.00367821
+      },
+      {
+        "wavenumber": 966,
+        "transmittance": 0.0038718
+      },
+      {
+        "wavenumber": 970,
+        "transmittance": 0.0034071839999999997
+      },
+      {
+        "wavenumber": 974,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 978,
+        "transmittance": 0.0037943639999999997
+      },
+      {
+        "wavenumber": 982,
+        "transmittance": 0.0034071839999999997
+      },
+      {
+        "wavenumber": 986,
+        "transmittance": 0.003639492
+      },
+      {
+        "wavenumber": 990,
+        "transmittance": 0.0036007739999999997
+      },
+      {
+        "wavenumber": 994,
+        "transmittance": 0.003445902
+      },
+      {
+        "wavenumber": 998,
+        "transmittance": 0.003329748
+      },
+      {
+        "wavenumber": 1002,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 1006,
+        "transmittance": 0.0037169279999999996
+      },
+      {
+        "wavenumber": 1010,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1014,
+        "transmittance": 0.003445902
+      },
+      {
+        "wavenumber": 1018,
+        "transmittance": 0.003252312
+      },
+      {
+        "wavenumber": 1022,
+        "transmittance": 0.0037943639999999997
+      },
+      {
+        "wavenumber": 1026,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1030,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 1034,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 1038,
+        "transmittance": 0.0036007739999999997
+      },
+      {
+        "wavenumber": 1042,
+        "transmittance": 0.0036007739999999997
+      },
+      {
+        "wavenumber": 1046,
+        "transmittance": 0.003445902
+      },
+      {
+        "wavenumber": 1050,
+        "transmittance": 0.0028264139999999997
+      },
+      {
+        "wavenumber": 1054,
+        "transmittance": 0.003058722
+      },
+      {
+        "wavenumber": 1058,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 1062,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 1066,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 1070,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1074,
+        "transmittance": 0.003639492
+      },
+      {
+        "wavenumber": 1078,
+        "transmittance": 0.002942568
+      },
+      {
+        "wavenumber": 1082,
+        "transmittance": 0.003136158
+      },
+      {
+        "wavenumber": 1086,
+        "transmittance": 0.0028264139999999997
+      },
+      {
+        "wavenumber": 1090,
+        "transmittance": 0.003058722
+      },
+      {
+        "wavenumber": 1094,
+        "transmittance": 0.003136158
+      },
+      {
+        "wavenumber": 1098,
+        "transmittance": 0.002671542
+      },
+      {
+        "wavenumber": 1102,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 1106,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 1110,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 1114,
+        "transmittance": 0.0028264139999999997
+      },
+      {
+        "wavenumber": 1118,
+        "transmittance": 0.00329103
+      },
+      {
+        "wavenumber": 1122,
+        "transmittance": 0.003252312
+      },
+      {
+        "wavenumber": 1126,
+        "transmittance": 0.003058722
+      },
+      {
+        "wavenumber": 1130,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 1134,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1138,
+        "transmittance": 0.0029812859999999997
+      },
+      {
+        "wavenumber": 1142,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 1146,
+        "transmittance": 0.003329748
+      },
+      {
+        "wavenumber": 1150,
+        "transmittance": 0.0027876959999999997
+      },
+      {
+        "wavenumber": 1154,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 1158,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1162,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 1166,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 1170,
+        "transmittance": 0.00329103
+      },
+      {
+        "wavenumber": 1174,
+        "transmittance": 0.00309744
+      },
+      {
+        "wavenumber": 1178,
+        "transmittance": 0.002942568
+      },
+      {
+        "wavenumber": 1182,
+        "transmittance": 0.0029812859999999997
+      },
+      {
+        "wavenumber": 1186,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1190,
+        "transmittance": 0.0029812859999999997
+      },
+      {
+        "wavenumber": 1194,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1198,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 1202,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 1206,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1210,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1214,
+        "transmittance": 0.003136158
+      },
+      {
+        "wavenumber": 1218,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 1222,
+        "transmittance": 0.002942568
+      },
+      {
+        "wavenumber": 1226,
+        "transmittance": 0.003252312
+      },
+      {
+        "wavenumber": 1230,
+        "transmittance": 0.00309744
+      },
+      {
+        "wavenumber": 1234,
+        "transmittance": 0.0035620559999999996
+      },
+      {
+        "wavenumber": 1238,
+        "transmittance": 0.00309744
+      },
+      {
+        "wavenumber": 1242,
+        "transmittance": 0.0034071839999999997
+      },
+      {
+        "wavenumber": 1246,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 1250,
+        "transmittance": 0.002865132
+      },
+      {
+        "wavenumber": 1254,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 1258,
+        "transmittance": 0.003252312
+      },
+      {
+        "wavenumber": 1262,
+        "transmittance": 0.0035620559999999996
+      },
+      {
+        "wavenumber": 1266,
+        "transmittance": 0.0029812859999999997
+      },
+      {
+        "wavenumber": 1270,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 1274,
+        "transmittance": 0.00309744
+      },
+      {
+        "wavenumber": 1278,
+        "transmittance": 0.003329748
+      },
+      {
+        "wavenumber": 1282,
+        "transmittance": 0.002942568
+      },
+      {
+        "wavenumber": 1286,
+        "transmittance": 0.003523338
+      },
+      {
+        "wavenumber": 1290,
+        "transmittance": 0.00309744
+      },
+      {
+        "wavenumber": 1294,
+        "transmittance": 0.003445902
+      },
+      {
+        "wavenumber": 1298,
+        "transmittance": 0.00367821
+      },
+      {
+        "wavenumber": 1302,
+        "transmittance": 0.0034071839999999997
+      },
+      {
+        "wavenumber": 1306,
+        "transmittance": 0.0035620559999999996
+      },
+      {
+        "wavenumber": 1310,
+        "transmittance": 0.0038718
+      },
+      {
+        "wavenumber": 1314,
+        "transmittance": 0.004220262
+      },
+      {
+        "wavenumber": 1318,
+        "transmittance": 0.00367821
+      },
+      {
+        "wavenumber": 1322,
+        "transmittance": 0.004530006
+      },
+      {
+        "wavenumber": 1326,
+        "transmittance": 0.004375134
+      },
+      {
+        "wavenumber": 1330,
+        "transmittance": 0.0044525699999999994
+      },
+      {
+        "wavenumber": 1334,
+        "transmittance": 0.004917186
+      },
+      {
+        "wavenumber": 1338,
+        "transmittance": 0.005536673999999999
+      },
+      {
+        "wavenumber": 1342,
+        "transmittance": 0.005885136
+      },
+      {
+        "wavenumber": 1346,
+        "transmittance": 0.006117444
+      },
+      {
+        "wavenumber": 1350,
+        "transmittance": 0.0076274459999999995
+      },
+      {
+        "wavenumber": 1354,
+        "transmittance": 0.008246934
+      },
+      {
+        "wavenumber": 1358,
+        "transmittance": 0.010337705999999999
+      },
+      {
+        "wavenumber": 1362,
+        "transmittance": 0.010337705999999999
+      },
+      {
+        "wavenumber": 1366,
+        "transmittance": 0.013783608
+      },
+      {
+        "wavenumber": 1370,
+        "transmittance": 0.014248223999999999
+      },
+      {
+        "wavenumber": 1374,
+        "transmittance": 0.017655407999999997
+      },
+      {
+        "wavenumber": 1378,
+        "transmittance": 0.0212949
+      },
+      {
+        "wavenumber": 1382,
+        "transmittance": 0.016764894
+      },
+      {
+        "wavenumber": 1386,
+        "transmittance": 0.013396427999999998
+      },
+      {
+        "wavenumber": 1390,
+        "transmittance": 0.018816948
+      },
+      {
+        "wavenumber": 1394,
+        "transmittance": 0.021140027999999998
+      },
+      {
+        "wavenumber": 1398,
+        "transmittance": 0.025244135999999997
+      },
+      {
+        "wavenumber": 1402,
+        "transmittance": 0.027799524
+      },
+      {
+        "wavenumber": 1406,
+        "transmittance": 0.029735423999999996
+      },
+      {
+        "wavenumber": 1410,
+        "transmittance": 0.030703374
+      },
+      {
+        "wavenumber": 1414,
+        "transmittance": 0.028109268
+      },
+      {
+        "wavenumber": 1418,
+        "transmittance": 0.029077218
+      },
+      {
+        "wavenumber": 1422,
+        "transmittance": 0.027838242
+      },
+      {
+        "wavenumber": 1426,
+        "transmittance": 0.030161321999999997
+      },
+      {
+        "wavenumber": 1430,
+        "transmittance": 0.02768337
+      },
+      {
+        "wavenumber": 1434,
+        "transmittance": 0.030432347999999998
+      },
+      {
+        "wavenumber": 1438,
+        "transmittance": 0.031710042
+      },
+      {
+        "wavenumber": 1442,
+        "transmittance": 0.03349107
+      },
+      {
+        "wavenumber": 1446,
+        "transmittance": 0.037633896
+      },
+      {
+        "wavenumber": 1450,
+        "transmittance": 0.035194661999999995
+      },
+      {
+        "wavenumber": 1454,
+        "transmittance": 0.03987954
+      },
+      {
+        "wavenumber": 1458,
+        "transmittance": 0.039453642
+      },
+      {
+        "wavenumber": 1462,
+        "transmittance": 0.042357492
+      },
+      {
+        "wavenumber": 1466,
+        "transmittance": 0.036743382
+      },
+      {
+        "wavenumber": 1470,
+        "transmittance": 0.046732626
+      },
+      {
+        "wavenumber": 1474,
+        "transmittance": 0.041234669999999994
+      },
+      {
+        "wavenumber": 1478,
+        "transmittance": 0.040692618
+      },
+      {
+        "wavenumber": 1482,
+        "transmittance": 0.03155517
+      },
+      {
+        "wavenumber": 1486,
+        "transmittance": 0.03445902
+      },
+      {
+        "wavenumber": 1490,
+        "transmittance": 0.032987736
+      },
+      {
+        "wavenumber": 1494,
+        "transmittance": 0.037788768
+      },
+      {
+        "wavenumber": 1498,
+        "transmittance": 0.030161321999999997
+      },
+      {
+        "wavenumber": 1502,
+        "transmittance": 0.033026454
+      },
+      {
+        "wavenumber": 1506,
+        "transmittance": 0.031516452
+      },
+      {
+        "wavenumber": 1510,
+        "transmittance": 0.034613892
+      },
+      {
+        "wavenumber": 1514,
+        "transmittance": 0.031400298
+      },
+      {
+        "wavenumber": 1518,
+        "transmittance": 0.028302857999999997
+      },
+      {
+        "wavenumber": 1522,
+        "transmittance": 0.028806191999999998
+      },
+      {
+        "wavenumber": 1526,
+        "transmittance": 0.027993114
+      },
+      {
+        "wavenumber": 1530,
+        "transmittance": 0.025863623999999998
+      },
+      {
+        "wavenumber": 1534,
+        "transmittance": 0.022107978
+      },
+      {
+        "wavenumber": 1538,
+        "transmittance": 0.023811569999999997
+      },
+      {
+        "wavenumber": 1542,
+        "transmittance": 0.022185413999999997
+      },
+      {
+        "wavenumber": 1546,
+        "transmittance": 0.020094642
+      },
+      {
+        "wavenumber": 1550,
+        "transmittance": 0.017577971999999997
+      },
+      {
+        "wavenumber": 1554,
+        "transmittance": 0.01664874
+      },
+      {
+        "wavenumber": 1558,
+        "transmittance": 0.016145405999999998
+      },
+      {
+        "wavenumber": 1562,
+        "transmittance": 0.013086684
+      },
+      {
+        "wavenumber": 1566,
+        "transmittance": 0.013202838
+      },
+      {
+        "wavenumber": 1570,
+        "transmittance": 0.011305655999999999
+      },
+      {
+        "wavenumber": 1574,
+        "transmittance": 0.011073347999999998
+      },
+      {
+        "wavenumber": 1578,
+        "transmittance": 0.009253602
+      },
+      {
+        "wavenumber": 1582,
+        "transmittance": 0.009253602
+      },
+      {
+        "wavenumber": 1586,
+        "transmittance": 0.0076274459999999995
+      },
+      {
+        "wavenumber": 1590,
+        "transmittance": 0.0076274459999999995
+      },
+      {
+        "wavenumber": 1594,
+        "transmittance": 0.00658206
+      },
+      {
+        "wavenumber": 1598,
+        "transmittance": 0.006659496
+      },
+      {
+        "wavenumber": 1602,
+        "transmittance": 0.0056528279999999995
+      },
+      {
+        "wavenumber": 1606,
+        "transmittance": 0.004723596
+      },
+      {
+        "wavenumber": 1610,
+        "transmittance": 0.004801031999999999
+      },
+      {
+        "wavenumber": 1614,
+        "transmittance": 0.003910518
+      },
+      {
+        "wavenumber": 1618,
+        "transmittance": 0.0040653899999999995
+      },
+      {
+        "wavenumber": 1622,
+        "transmittance": 0.003639492
+      },
+      {
+        "wavenumber": 1626,
+        "transmittance": 0.003523338
+      },
+      {
+        "wavenumber": 1630,
+        "transmittance": 0.00367821
+      },
+      {
+        "wavenumber": 1634,
+        "transmittance": 0.003252312
+      },
+      {
+        "wavenumber": 1638,
+        "transmittance": 0.003136158
+      },
+      {
+        "wavenumber": 1642,
+        "transmittance": 0.003136158
+      },
+      {
+        "wavenumber": 1646,
+        "transmittance": 0.002865132
+      },
+      {
+        "wavenumber": 1650,
+        "transmittance": 0.0025941059999999997
+      },
+      {
+        "wavenumber": 1654,
+        "transmittance": 0.002942568
+      },
+      {
+        "wavenumber": 1658,
+        "transmittance": 0.002361798
+      },
+      {
+        "wavenumber": 1662,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 1666,
+        "transmittance": 0.0024392339999999998
+      },
+      {
+        "wavenumber": 1670,
+        "transmittance": 0.0024392339999999998
+      },
+      {
+        "wavenumber": 1674,
+        "transmittance": 0.0020520539999999998
+      },
+      {
+        "wavenumber": 1678,
+        "transmittance": 0.0024392339999999998
+      },
+      {
+        "wavenumber": 1682,
+        "transmittance": 0.002477952
+      },
+      {
+        "wavenumber": 1686,
+        "transmittance": 0.0024392339999999998
+      },
+      {
+        "wavenumber": 1690,
+        "transmittance": 0.0022456439999999998
+      },
+      {
+        "wavenumber": 1694,
+        "transmittance": 0.002361798
+      },
+      {
+        "wavenumber": 1698,
+        "transmittance": 0.00232308
+      },
+      {
+        "wavenumber": 1702,
+        "transmittance": 0.00174231
+      },
+      {
+        "wavenumber": 1706,
+        "transmittance": 0.002361798
+      },
+      {
+        "wavenumber": 1710,
+        "transmittance": 0.002555388
+      },
+      {
+        "wavenumber": 1714,
+        "transmittance": 0.0026328239999999998
+      },
+      {
+        "wavenumber": 1718,
+        "transmittance": 0.0024005159999999997
+      },
+      {
+        "wavenumber": 1722,
+        "transmittance": 0.002284362
+      },
+      {
+        "wavenumber": 1726,
+        "transmittance": 0.002477952
+      },
+      {
+        "wavenumber": 1730,
+        "transmittance": 0.002361798
+      },
+      {
+        "wavenumber": 1734,
+        "transmittance": 0.002361798
+      },
+      {
+        "wavenumber": 1738,
+        "transmittance": 0.00232308
+      },
+      {
+        "wavenumber": 1742,
+        "transmittance": 0.0026328239999999998
+      },
+      {
+        "wavenumber": 1746,
+        "transmittance": 0.00232308
+      },
+      {
+        "wavenumber": 1750,
+        "transmittance": 0.0025941059999999997
+      },
+      {
+        "wavenumber": 1754,
+        "transmittance": 0.0022456439999999998
+      },
+      {
+        "wavenumber": 1758,
+        "transmittance": 0.00251667
+      },
+      {
+        "wavenumber": 1762,
+        "transmittance": 0.002477952
+      },
+      {
+        "wavenumber": 1766,
+        "transmittance": 0.00251667
+      },
+      {
+        "wavenumber": 1770,
+        "transmittance": 0.002477952
+      },
+      {
+        "wavenumber": 1774,
+        "transmittance": 0.00212949
+      },
+      {
+        "wavenumber": 1778,
+        "transmittance": 0.00251667
+      },
+      {
+        "wavenumber": 1782,
+        "transmittance": 0.0022069259999999997
+      },
+      {
+        "wavenumber": 1786,
+        "transmittance": 0.002168208
+      },
+      {
+        "wavenumber": 1790,
+        "transmittance": 0.002090772
+      },
+      {
+        "wavenumber": 1794,
+        "transmittance": 0.002284362
+      },
+      {
+        "wavenumber": 1798,
+        "transmittance": 0.002168208
+      },
+      {
+        "wavenumber": 1802,
+        "transmittance": 0.0022456439999999998
+      },
+      {
+        "wavenumber": 1806,
+        "transmittance": 0.001819746
+      },
+      {
+        "wavenumber": 1810,
+        "transmittance": 0.00212949
+      },
+      {
+        "wavenumber": 1814,
+        "transmittance": 0.0022456439999999998
+      },
+      {
+        "wavenumber": 1818,
+        "transmittance": 0.002090772
+      },
+      {
+        "wavenumber": 1822,
+        "transmittance": 0.00212949
+      },
+      {
+        "wavenumber": 1826,
+        "transmittance": 0.0018584639999999998
+      },
+      {
+        "wavenumber": 1830,
+        "transmittance": 0.0020520539999999998
+      },
+      {
+        "wavenumber": 1834,
+        "transmittance": 0.0020133359999999997
+      },
+      {
+        "wavenumber": 1838,
+        "transmittance": 0.0020133359999999997
+      },
+      {
+        "wavenumber": 1842,
+        "transmittance": 0.0017810279999999998
+      },
+      {
+        "wavenumber": 1846,
+        "transmittance": 0.002090772
+      },
+      {
+        "wavenumber": 1850,
+        "transmittance": 0.001819746
+      },
+      {
+        "wavenumber": 1854,
+        "transmittance": 0.0017810279999999998
+      },
+      {
+        "wavenumber": 1858,
+        "transmittance": 0.00174231
+      },
+      {
+        "wavenumber": 1862,
+        "transmittance": 0.0017810279999999998
+      },
+      {
+        "wavenumber": 1866,
+        "transmittance": 0.001664874
+      },
+      {
+        "wavenumber": 1870,
+        "transmittance": 0.001432566
+      },
+      {
+        "wavenumber": 1874,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 1878,
+        "transmittance": 0.001626156
+      },
+      {
+        "wavenumber": 1882,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 1886,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 1890,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 1894,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 1898,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 1902,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 1906,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 1910,
+        "transmittance": 0.001471284
+      },
+      {
+        "wavenumber": 1914,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 1918,
+        "transmittance": 0.00154872
+      },
+      {
+        "wavenumber": 1922,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 1926,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 1930,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 1934,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 1938,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 1942,
+        "transmittance": 0.001432566
+      },
+      {
+        "wavenumber": 1946,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 1950,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 1954,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 1958,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 1962,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 1966,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 1970,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 1974,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 1978,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 1982,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 1986,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 1990,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 1994,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 1998,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 2002,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 2006,
+        "transmittance": 0.001471284
+      },
+      {
+        "wavenumber": 2010,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 2014,
+        "transmittance": 0.001432566
+      },
+      {
+        "wavenumber": 2018,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2022,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 2026,
+        "transmittance": 0.001471284
+      },
+      {
+        "wavenumber": 2030,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 2034,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 2038,
+        "transmittance": 0.001432566
+      },
+      {
+        "wavenumber": 2042,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 2046,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 2050,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 2054,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 2058,
+        "transmittance": 0.001432566
+      },
+      {
+        "wavenumber": 2062,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 2066,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 2070,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 2074,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 2078,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 2082,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 2086,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2090,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 2094,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 2098,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2102,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 2106,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 2110,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 2114,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2118,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 2122,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 2126,
+        "transmittance": 0.00077436
+      },
+      {
+        "wavenumber": 2130,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 2134,
+        "transmittance": 0.00077436
+      },
+      {
+        "wavenumber": 2138,
+        "transmittance": 0.0008517959999999999
+      },
+      {
+        "wavenumber": 2142,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 2146,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 2150,
+        "transmittance": 0.00077436
+      },
+      {
+        "wavenumber": 2154,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2158,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 2162,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 2166,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 2170,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 2174,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2178,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 2182,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 2186,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2190,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 2194,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 2198,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 2202,
+        "transmittance": 0.0015100019999999999
+      },
+      {
+        "wavenumber": 2206,
+        "transmittance": 0.0015100019999999999
+      },
+      {
+        "wavenumber": 2210,
+        "transmittance": 0.001664874
+      },
+      {
+        "wavenumber": 2214,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 2218,
+        "transmittance": 0.001626156
+      },
+      {
+        "wavenumber": 2222,
+        "transmittance": 0.0015100019999999999
+      },
+      {
+        "wavenumber": 2226,
+        "transmittance": 0.0015874379999999998
+      },
+      {
+        "wavenumber": 2230,
+        "transmittance": 0.001471284
+      },
+      {
+        "wavenumber": 2234,
+        "transmittance": 0.00174231
+      },
+      {
+        "wavenumber": 2238,
+        "transmittance": 0.0017035919999999999
+      },
+      {
+        "wavenumber": 2242,
+        "transmittance": 0.001626156
+      },
+      {
+        "wavenumber": 2246,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 2250,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 2254,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 2258,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 2262,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 2266,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2270,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 2274,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 2278,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2282,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 2286,
+        "transmittance": 0.0008517959999999999
+      },
+      {
+        "wavenumber": 2290,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 2294,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 2298,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 2302,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 2306,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 2310,
+        "transmittance": 0.00058077
+      },
+      {
+        "wavenumber": 2314,
+        "transmittance": 0.00077436
+      },
+      {
+        "wavenumber": 2318,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 2322,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 2326,
+        "transmittance": 0.0015100019999999999
+      },
+      {
+        "wavenumber": 2330,
+        "transmittance": 0.0015874379999999998
+      },
+      {
+        "wavenumber": 2334,
+        "transmittance": 0.002361798
+      },
+      {
+        "wavenumber": 2338,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 2342,
+        "transmittance": 0.0024005159999999997
+      },
+      {
+        "wavenumber": 2346,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 2350,
+        "transmittance": 0.0022069259999999997
+      },
+      {
+        "wavenumber": 2354,
+        "transmittance": 0.001471284
+      },
+      {
+        "wavenumber": 2358,
+        "transmittance": 0.0020520539999999998
+      },
+      {
+        "wavenumber": 2362,
+        "transmittance": 0.001819746
+      },
+      {
+        "wavenumber": 2366,
+        "transmittance": 0.002477952
+      },
+      {
+        "wavenumber": 2370,
+        "transmittance": 0.002090772
+      },
+      {
+        "wavenumber": 2374,
+        "transmittance": 0.0006969239999999999
+      },
+      {
+        "wavenumber": 2378,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 2382,
+        "transmittance": 0.001974618
+      },
+      {
+        "wavenumber": 2386,
+        "transmittance": 0.002555388
+      },
+      {
+        "wavenumber": 2390,
+        "transmittance": 0.002942568
+      },
+      {
+        "wavenumber": 2394,
+        "transmittance": 0.0029812859999999997
+      },
+      {
+        "wavenumber": 2398,
+        "transmittance": 0.00212949
+      },
+      {
+        "wavenumber": 2402,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 2406,
+        "transmittance": 0.000154872
+      },
+      {
+        "wavenumber": 2410,
+        "transmittance": 0.00023230799999999997
+      },
+      {
+        "wavenumber": 2414,
+        "transmittance": 0.00023230799999999997
+      },
+      {
+        "wavenumber": 2418,
+        "transmittance": 0.000271026
+      },
+      {
+        "wavenumber": 2422,
+        "transmittance": 0.00042589799999999997
+      },
+      {
+        "wavenumber": 2426,
+        "transmittance": 0.000077436
+      },
+      {
+        "wavenumber": 2430,
+        "transmittance": 0.00011615399999999999
+      },
+      {
+        "wavenumber": 2434,
+        "transmittance": 0.000542052
+      },
+      {
+        "wavenumber": 2438,
+        "transmittance": 0.00042589799999999997
+      },
+      {
+        "wavenumber": 2442,
+        "transmittance": 0.000271026
+      },
+      {
+        "wavenumber": 2446,
+        "transmittance": 0.00019359
+      },
+      {
+        "wavenumber": 2450,
+        "transmittance": 0.00034846199999999996
+      },
+      {
+        "wavenumber": 2454,
+        "transmittance": 0.000542052
+      },
+      {
+        "wavenumber": 2458,
+        "transmittance": 0.00046461599999999994
+      },
+      {
+        "wavenumber": 2462,
+        "transmittance": 0.00034846199999999996
+      },
+      {
+        "wavenumber": 2466,
+        "transmittance": 0.00034846199999999996
+      },
+      {
+        "wavenumber": 2470,
+        "transmittance": 0.000154872
+      },
+      {
+        "wavenumber": 2474,
+        "transmittance": 0.0005033339999999999
+      },
+      {
+        "wavenumber": 2478,
+        "transmittance": 0.00011615399999999999
+      },
+      {
+        "wavenumber": 2482,
+        "transmittance": 0.00042589799999999997
+      },
+      {
+        "wavenumber": 2486,
+        "transmittance": 0.00042589799999999997
+      },
+      {
+        "wavenumber": 2490,
+        "transmittance": 0.00042589799999999997
+      },
+      {
+        "wavenumber": 2494,
+        "transmittance": 0.00058077
+      },
+      {
+        "wavenumber": 2498,
+        "transmittance": 0.0006582059999999999
+      },
+      {
+        "wavenumber": 2502,
+        "transmittance": 0.00034846199999999996
+      },
+      {
+        "wavenumber": 2506,
+        "transmittance": 0.000542052
+      },
+      {
+        "wavenumber": 2510,
+        "transmittance": 0.00042589799999999997
+      },
+      {
+        "wavenumber": 2514,
+        "transmittance": 0.000309744
+      },
+      {
+        "wavenumber": 2518,
+        "transmittance": 0.0006969239999999999
+      },
+      {
+        "wavenumber": 2522,
+        "transmittance": 0.0006582059999999999
+      },
+      {
+        "wavenumber": 2526,
+        "transmittance": 0.000542052
+      },
+      {
+        "wavenumber": 2530,
+        "transmittance": 0.00042589799999999997
+      },
+      {
+        "wavenumber": 2534,
+        "transmittance": 0.00058077
+      },
+      {
+        "wavenumber": 2538,
+        "transmittance": 0.0006582059999999999
+      },
+      {
+        "wavenumber": 2542,
+        "transmittance": 0.00034846199999999996
+      },
+      {
+        "wavenumber": 2546,
+        "transmittance": 0.000735642
+      },
+      {
+        "wavenumber": 2550,
+        "transmittance": 0.00034846199999999996
+      },
+      {
+        "wavenumber": 2554,
+        "transmittance": 0.00077436
+      },
+      {
+        "wavenumber": 2558,
+        "transmittance": 0.0006969239999999999
+      },
+      {
+        "wavenumber": 2562,
+        "transmittance": 0.000813078
+      },
+      {
+        "wavenumber": 2566,
+        "transmittance": 0.000735642
+      },
+      {
+        "wavenumber": 2570,
+        "transmittance": 0.00077436
+      },
+      {
+        "wavenumber": 2574,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 2578,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 2582,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 2586,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 2590,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 2594,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 2598,
+        "transmittance": 0.00154872
+      },
+      {
+        "wavenumber": 2602,
+        "transmittance": 0.001626156
+      },
+      {
+        "wavenumber": 2606,
+        "transmittance": 0.0020133359999999997
+      },
+      {
+        "wavenumber": 2610,
+        "transmittance": 0.0022456439999999998
+      },
+      {
+        "wavenumber": 2614,
+        "transmittance": 0.002168208
+      },
+      {
+        "wavenumber": 2618,
+        "transmittance": 0.002284362
+      },
+      {
+        "wavenumber": 2622,
+        "transmittance": 0.002168208
+      },
+      {
+        "wavenumber": 2626,
+        "transmittance": 0.0026328239999999998
+      },
+      {
+        "wavenumber": 2630,
+        "transmittance": 0.0024392339999999998
+      },
+      {
+        "wavenumber": 2634,
+        "transmittance": 0.0029812859999999997
+      },
+      {
+        "wavenumber": 2638,
+        "transmittance": 0.0024005159999999997
+      },
+      {
+        "wavenumber": 2642,
+        "transmittance": 0.0025941059999999997
+      },
+      {
+        "wavenumber": 2646,
+        "transmittance": 0.002477952
+      },
+      {
+        "wavenumber": 2650,
+        "transmittance": 0.002748978
+      },
+      {
+        "wavenumber": 2654,
+        "transmittance": 0.0025941059999999997
+      },
+      {
+        "wavenumber": 2658,
+        "transmittance": 0.0029812859999999997
+      },
+      {
+        "wavenumber": 2662,
+        "transmittance": 0.00290385
+      },
+      {
+        "wavenumber": 2666,
+        "transmittance": 0.00309744
+      },
+      {
+        "wavenumber": 2670,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 2674,
+        "transmittance": 0.003136158
+      },
+      {
+        "wavenumber": 2678,
+        "transmittance": 0.003136158
+      },
+      {
+        "wavenumber": 2682,
+        "transmittance": 0.002942568
+      },
+      {
+        "wavenumber": 2686,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 2690,
+        "transmittance": 0.0031748759999999997
+      },
+      {
+        "wavenumber": 2694,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 2698,
+        "transmittance": 0.0035620559999999996
+      },
+      {
+        "wavenumber": 2702,
+        "transmittance": 0.0035620559999999996
+      },
+      {
+        "wavenumber": 2706,
+        "transmittance": 0.003445902
+      },
+      {
+        "wavenumber": 2710,
+        "transmittance": 0.0038718
+      },
+      {
+        "wavenumber": 2714,
+        "transmittance": 0.003987954
+      },
+      {
+        "wavenumber": 2718,
+        "transmittance": 0.004568724
+      },
+      {
+        "wavenumber": 2722,
+        "transmittance": 0.00503334
+      },
+      {
+        "wavenumber": 2726,
+        "transmittance": 0.005188211999999999
+      },
+      {
+        "wavenumber": 2730,
+        "transmittance": 0.0058077
+      },
+      {
+        "wavenumber": 2734,
+        "transmittance": 0.00658206
+      },
+      {
+        "wavenumber": 2738,
+        "transmittance": 0.006698213999999999
+      },
+      {
+        "wavenumber": 2742,
+        "transmittance": 0.006698213999999999
+      },
+      {
+        "wavenumber": 2746,
+        "transmittance": 0.006775649999999999
+      },
+      {
+        "wavenumber": 2750,
+        "transmittance": 0.008130779999999999
+      },
+      {
+        "wavenumber": 2754,
+        "transmittance": 0.012351042
+      },
+      {
+        "wavenumber": 2758,
+        "transmittance": 0.00871155
+      },
+      {
+        "wavenumber": 2762,
+        "transmittance": 0.006698213999999999
+      },
+      {
+        "wavenumber": 2766,
+        "transmittance": 0.009408474
+      },
+      {
+        "wavenumber": 2770,
+        "transmittance": 0.010918476
+      },
+      {
+        "wavenumber": 2774,
+        "transmittance": 0.013590017999999999
+      },
+      {
+        "wavenumber": 2778,
+        "transmittance": 0.01471284
+      },
+      {
+        "wavenumber": 2782,
+        "transmittance": 0.013861044
+      },
+      {
+        "wavenumber": 2786,
+        "transmittance": 0.012080015999999999
+      },
+      {
+        "wavenumber": 2790,
+        "transmittance": 0.010182834
+      },
+      {
+        "wavenumber": 2794,
+        "transmittance": 0.009989244
+      },
+      {
+        "wavenumber": 2798,
+        "transmittance": 0.009137448
+      },
+      {
+        "wavenumber": 2802,
+        "transmittance": 0.010298987999999999
+      },
+      {
+        "wavenumber": 2806,
+        "transmittance": 0.010337705999999999
+      },
+      {
+        "wavenumber": 2810,
+        "transmittance": 0.012312324
+      },
+      {
+        "wavenumber": 2814,
+        "transmittance": 0.01297053
+      },
+      {
+        "wavenumber": 2818,
+        "transmittance": 0.014674122
+      },
+      {
+        "wavenumber": 2822,
+        "transmittance": 0.01587438
+      },
+      {
+        "wavenumber": 2826,
+        "transmittance": 0.017926433999999998
+      },
+      {
+        "wavenumber": 2830,
+        "transmittance": 0.020404386
+      },
+      {
+        "wavenumber": 2834,
+        "transmittance": 0.023114646
+      },
+      {
+        "wavenumber": 2838,
+        "transmittance": 0.028225421999999997
+      },
+      {
+        "wavenumber": 2842,
+        "transmittance": 0.032290811999999995
+      },
+      {
+        "wavenumber": 2846,
+        "transmittance": 0.039647232
+      },
+      {
+        "wavenumber": 2850,
+        "transmittance": 0.047003652
+      },
+      {
+        "wavenumber": 2854,
+        "transmittance": 0.058502898
+      },
+      {
+        "wavenumber": 2858,
+        "transmittance": 0.071589582
+      },
+      {
+        "wavenumber": 2862,
+        "transmittance": 0.089709606
+      },
+      {
+        "wavenumber": 2866,
+        "transmittance": 0.11073348
+      },
+      {
+        "wavenumber": 2870,
+        "transmittance": 0.13415786999999998
+      },
+      {
+        "wavenumber": 2874,
+        "transmittance": 0.155375334
+      },
+      {
+        "wavenumber": 2878,
+        "transmittance": 0.16822970999999998
+      },
+      {
+        "wavenumber": 2882,
+        "transmittance": 0.17132714999999998
+      },
+      {
+        "wavenumber": 2886,
+        "transmittance": 0.16253816399999998
+      },
+      {
+        "wavenumber": 2890,
+        "transmittance": 0.193086666
+      },
+      {
+        "wavenumber": 2894,
+        "transmittance": 0.233818002
+      },
+      {
+        "wavenumber": 2898,
+        "transmittance": 0.184917168
+      },
+      {
+        "wavenumber": 2902,
+        "transmittance": 0.142559676
+      },
+      {
+        "wavenumber": 2906,
+        "transmittance": 0.175044078
+      },
+      {
+        "wavenumber": 2910,
+        "transmittance": 0.21318130799999999
+      },
+      {
+        "wavenumber": 2914,
+        "transmittance": 0.260998038
+      },
+      {
+        "wavenumber": 2918,
+        "transmittance": 0.29596039199999996
+      },
+      {
+        "wavenumber": 2922,
+        "transmittance": 0.33103889999999997
+      },
+      {
+        "wavenumber": 2926,
+        "transmittance": 0.35268226199999997
+      },
+      {
+        "wavenumber": 2930,
+        "transmittance": 0.35872226999999995
+      },
+      {
+        "wavenumber": 2934,
+        "transmittance": 0.36464612399999996
+      },
+      {
+        "wavenumber": 2938,
+        "transmittance": 0.33858890999999997
+      },
+      {
+        "wavenumber": 2942,
+        "transmittance": 0.32321786399999997
+      },
+      {
+        "wavenumber": 2946,
+        "transmittance": 0.310286052
+      },
+      {
+        "wavenumber": 2950,
+        "transmittance": 0.34524840599999995
+      },
+      {
+        "wavenumber": 2954,
+        "transmittance": 0.38717999999999997
+      },
+      {
+        "wavenumber": 2958,
+        "transmittance": 0.372931776
+      },
+      {
+        "wavenumber": 2962,
+        "transmittance": 0.30548502
+      },
+      {
+        "wavenumber": 2966,
+        "transmittance": 0.360774324
+      },
+      {
+        "wavenumber": 2970,
+        "transmittance": 0.37002792599999995
+      },
+      {
+        "wavenumber": 2974,
+        "transmittance": 0.383617944
+      },
+      {
+        "wavenumber": 2978,
+        "transmittance": 0.358451244
+      },
+      {
+        "wavenumber": 2982,
+        "transmittance": 0.34451276399999997
+      },
+      {
+        "wavenumber": 2986,
+        "transmittance": 0.33889865399999997
+      },
+      {
+        "wavenumber": 2990,
+        "transmittance": 0.3174876
+      },
+      {
+        "wavenumber": 2994,
+        "transmittance": 0.31342221
+      },
+      {
+        "wavenumber": 2998,
+        "transmittance": 0.29216602799999997
+      },
+      {
+        "wavenumber": 3002,
+        "transmittance": 0.31764247199999995
+      },
+      {
+        "wavenumber": 3006,
+        "transmittance": 0.316442214
+      },
+      {
+        "wavenumber": 3010,
+        "transmittance": 0.31415785199999996
+      },
+      {
+        "wavenumber": 3014,
+        "transmittance": 0.272032668
+      },
+      {
+        "wavenumber": 3018,
+        "transmittance": 0.275943186
+      },
+      {
+        "wavenumber": 3022,
+        "transmittance": 0.24880186799999998
+      },
+      {
+        "wavenumber": 3026,
+        "transmittance": 0.239974164
+      },
+      {
+        "wavenumber": 3030,
+        "transmittance": 0.21918259799999998
+      },
+      {
+        "wavenumber": 3034,
+        "transmittance": 0.202959756
+      },
+      {
+        "wavenumber": 3038,
+        "transmittance": 0.185033322
+      },
+      {
+        "wavenumber": 3042,
+        "transmittance": 0.16695201599999998
+      },
+      {
+        "wavenumber": 3046,
+        "transmittance": 0.15281994599999998
+      },
+      {
+        "wavenumber": 3050,
+        "transmittance": 0.13748761799999998
+      },
+      {
+        "wavenumber": 3054,
+        "transmittance": 0.11650246199999999
+      },
+      {
+        "wavenumber": 3058,
+        "transmittance": 0.10337705999999999
+      },
+      {
+        "wavenumber": 3062,
+        "transmittance": 0.089709606
+      },
+      {
+        "wavenumber": 3066,
+        "transmittance": 0.07801677
+      },
+      {
+        "wavenumber": 3070,
+        "transmittance": 0.066052908
+      },
+      {
+        "wavenumber": 3074,
+        "transmittance": 0.054205199999999995
+      },
+      {
+        "wavenumber": 3078,
+        "transmittance": 0.0464616
+      },
+      {
+        "wavenumber": 3082,
+        "transmittance": 0.037866204
+      },
+      {
+        "wavenumber": 3086,
+        "transmittance": 0.032600555999999996
+      },
+      {
+        "wavenumber": 3090,
+        "transmittance": 0.026366958
+      },
+      {
+        "wavenumber": 3094,
+        "transmittance": 0.022262849999999997
+      },
+      {
+        "wavenumber": 3098,
+        "transmittance": 0.018352332
+      },
+      {
+        "wavenumber": 3102,
+        "transmittance": 0.015564636
+      },
+      {
+        "wavenumber": 3106,
+        "transmittance": 0.013783608
+      },
+      {
+        "wavenumber": 3110,
+        "transmittance": 0.011150783999999999
+      },
+      {
+        "wavenumber": 3114,
+        "transmittance": 0.009989244
+      },
+      {
+        "wavenumber": 3118,
+        "transmittance": 0.008672832
+      },
+      {
+        "wavenumber": 3122,
+        "transmittance": 0.007821036
+      },
+      {
+        "wavenumber": 3126,
+        "transmittance": 0.006620778
+      },
+      {
+        "wavenumber": 3130,
+        "transmittance": 0.006659496
+      },
+      {
+        "wavenumber": 3134,
+        "transmittance": 0.005885136
+      },
+      {
+        "wavenumber": 3138,
+        "transmittance": 0.005497956
+      },
+      {
+        "wavenumber": 3142,
+        "transmittance": 0.005072058
+      },
+      {
+        "wavenumber": 3146,
+        "transmittance": 0.004220262
+      },
+      {
+        "wavenumber": 3150,
+        "transmittance": 0.004917186
+      },
+      {
+        "wavenumber": 3154,
+        "transmittance": 0.0038718
+      },
+      {
+        "wavenumber": 3158,
+        "transmittance": 0.004801031999999999
+      },
+      {
+        "wavenumber": 3162,
+        "transmittance": 0.0040653899999999995
+      },
+      {
+        "wavenumber": 3166,
+        "transmittance": 0.004220262
+      },
+      {
+        "wavenumber": 3170,
+        "transmittance": 0.003910518
+      },
+      {
+        "wavenumber": 3174,
+        "transmittance": 0.0038718
+      },
+      {
+        "wavenumber": 3178,
+        "transmittance": 0.003833082
+      },
+      {
+        "wavenumber": 3182,
+        "transmittance": 0.004142826
+      },
+      {
+        "wavenumber": 3186,
+        "transmittance": 0.0044525699999999994
+      },
+      {
+        "wavenumber": 3190,
+        "transmittance": 0.0037556459999999996
+      },
+      {
+        "wavenumber": 3194,
+        "transmittance": 0.003910518
+      },
+      {
+        "wavenumber": 3198,
+        "transmittance": 0.0038718
+      },
+      {
+        "wavenumber": 3202,
+        "transmittance": 0.0041041079999999995
+      },
+      {
+        "wavenumber": 3206,
+        "transmittance": 0.004413851999999999
+      },
+      {
+        "wavenumber": 3210,
+        "transmittance": 0.004684878
+      },
+      {
+        "wavenumber": 3214,
+        "transmittance": 0.0035620559999999996
+      },
+      {
+        "wavenumber": 3218,
+        "transmittance": 0.0040653899999999995
+      },
+      {
+        "wavenumber": 3222,
+        "transmittance": 0.004607442
+      },
+      {
+        "wavenumber": 3226,
+        "transmittance": 0.003833082
+      },
+      {
+        "wavenumber": 3230,
+        "transmittance": 0.004181544
+      },
+      {
+        "wavenumber": 3234,
+        "transmittance": 0.003252312
+      },
+      {
+        "wavenumber": 3238,
+        "transmittance": 0.003949236
+      },
+      {
+        "wavenumber": 3242,
+        "transmittance": 0.0034071839999999997
+      },
+      {
+        "wavenumber": 3246,
+        "transmittance": 0.0040653899999999995
+      },
+      {
+        "wavenumber": 3250,
+        "transmittance": 0.0036007739999999997
+      },
+      {
+        "wavenumber": 3254,
+        "transmittance": 0.0036007739999999997
+      },
+      {
+        "wavenumber": 3258,
+        "transmittance": 0.0037169279999999996
+      },
+      {
+        "wavenumber": 3262,
+        "transmittance": 0.0036007739999999997
+      },
+      {
+        "wavenumber": 3266,
+        "transmittance": 0.0034071839999999997
+      },
+      {
+        "wavenumber": 3270,
+        "transmittance": 0.00290385
+      },
+      {
+        "wavenumber": 3274,
+        "transmittance": 0.0032135939999999997
+      },
+      {
+        "wavenumber": 3278,
+        "transmittance": 0.002865132
+      },
+      {
+        "wavenumber": 3282,
+        "transmittance": 0.002555388
+      },
+      {
+        "wavenumber": 3286,
+        "transmittance": 0.002477952
+      },
+      {
+        "wavenumber": 3290,
+        "transmittance": 0.0022069259999999997
+      },
+      {
+        "wavenumber": 3294,
+        "transmittance": 0.0015874379999999998
+      },
+      {
+        "wavenumber": 3298,
+        "transmittance": 0.002284362
+      },
+      {
+        "wavenumber": 3302,
+        "transmittance": 0.0022069259999999997
+      },
+      {
+        "wavenumber": 3306,
+        "transmittance": 0.0018584639999999998
+      },
+      {
+        "wavenumber": 3310,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3314,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 3318,
+        "transmittance": 0.0015874379999999998
+      },
+      {
+        "wavenumber": 3322,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 3326,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 3330,
+        "transmittance": 0.000619488
+      },
+      {
+        "wavenumber": 3334,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3338,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 3342,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 3346,
+        "transmittance": 0.000813078
+      },
+      {
+        "wavenumber": 3350,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 3354,
+        "transmittance": 0.0008517959999999999
+      },
+      {
+        "wavenumber": 3358,
+        "transmittance": 0.0006969239999999999
+      },
+      {
+        "wavenumber": 3362,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 3366,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3370,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 3374,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3378,
+        "transmittance": 0.0006969239999999999
+      },
+      {
+        "wavenumber": 3382,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 3386,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 3390,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 3394,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 3398,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 3402,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 3406,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3410,
+        "transmittance": 0.00077436
+      },
+      {
+        "wavenumber": 3414,
+        "transmittance": 0.0018971819999999999
+      },
+      {
+        "wavenumber": 3418,
+        "transmittance": 0.0012002579999999998
+      },
+      {
+        "wavenumber": 3422,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 3426,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3430,
+        "transmittance": 0.001626156
+      },
+      {
+        "wavenumber": 3434,
+        "transmittance": 0.00212949
+      },
+      {
+        "wavenumber": 3438,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 3442,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 3446,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 3450,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 3454,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3458,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 3462,
+        "transmittance": 0.000813078
+      },
+      {
+        "wavenumber": 3466,
+        "transmittance": 0.0008517959999999999
+      },
+      {
+        "wavenumber": 3470,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3474,
+        "transmittance": 0.0013164119999999999
+      },
+      {
+        "wavenumber": 3478,
+        "transmittance": 0.0008517959999999999
+      },
+      {
+        "wavenumber": 3482,
+        "transmittance": 0.000735642
+      },
+      {
+        "wavenumber": 3486,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 3490,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3494,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3498,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 3502,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 3506,
+        "transmittance": 0.000619488
+      },
+      {
+        "wavenumber": 3510,
+        "transmittance": 0.0006582059999999999
+      },
+      {
+        "wavenumber": 3514,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 3518,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3522,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 3526,
+        "transmittance": 0.000813078
+      },
+      {
+        "wavenumber": 3530,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3534,
+        "transmittance": 0.0008517959999999999
+      },
+      {
+        "wavenumber": 3538,
+        "transmittance": 0.000735642
+      },
+      {
+        "wavenumber": 3542,
+        "transmittance": 0.0008517959999999999
+      },
+      {
+        "wavenumber": 3546,
+        "transmittance": 0.00034846199999999996
+      },
+      {
+        "wavenumber": 3550,
+        "transmittance": 0.00019359
+      },
+      {
+        "wavenumber": 3554,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 3558,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 3562,
+        "transmittance": 0.0015874379999999998
+      },
+      {
+        "wavenumber": 3566,
+        "transmittance": 0.00077436
+      },
+      {
+        "wavenumber": 3570,
+        "transmittance": 0.0005033339999999999
+      },
+      {
+        "wavenumber": 3574,
+        "transmittance": 0
+      },
+      {
+        "wavenumber": 3578,
+        "transmittance": 0.000309744
+      },
+      {
+        "wavenumber": 3582,
+        "transmittance": 0.0009292319999999999
+      },
+      {
+        "wavenumber": 3586,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 3590,
+        "transmittance": 0.001045386
+      },
+      {
+        "wavenumber": 3594,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3598,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3602,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3606,
+        "transmittance": 0.0006969239999999999
+      },
+      {
+        "wavenumber": 3610,
+        "transmittance": 0.000077436
+      },
+      {
+        "wavenumber": 3614,
+        "transmittance": 0.000619488
+      },
+      {
+        "wavenumber": 3618,
+        "transmittance": 0.0006969239999999999
+      },
+      {
+        "wavenumber": 3622,
+        "transmittance": 0.000813078
+      },
+      {
+        "wavenumber": 3626,
+        "transmittance": 0.0008517959999999999
+      },
+      {
+        "wavenumber": 3630,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3634,
+        "transmittance": 0.00154872
+      },
+      {
+        "wavenumber": 3638,
+        "transmittance": 0.001471284
+      },
+      {
+        "wavenumber": 3642,
+        "transmittance": 0.00174231
+      },
+      {
+        "wavenumber": 3646,
+        "transmittance": 0.00154872
+      },
+      {
+        "wavenumber": 3650,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3654,
+        "transmittance": 0.000542052
+      },
+      {
+        "wavenumber": 3658,
+        "transmittance": 0.0015100019999999999
+      },
+      {
+        "wavenumber": 3662,
+        "transmittance": 0.0010066679999999998
+      },
+      {
+        "wavenumber": 3666,
+        "transmittance": 0.0018584639999999998
+      },
+      {
+        "wavenumber": 3670,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 3674,
+        "transmittance": 0.0015100019999999999
+      },
+      {
+        "wavenumber": 3678,
+        "transmittance": 0.00096795
+      },
+      {
+        "wavenumber": 3682,
+        "transmittance": 0.0026328239999999998
+      },
+      {
+        "wavenumber": 3686,
+        "transmittance": 0.001819746
+      },
+      {
+        "wavenumber": 3690,
+        "transmittance": 0.0022456439999999998
+      },
+      {
+        "wavenumber": 3694,
+        "transmittance": 0.00174231
+      },
+      {
+        "wavenumber": 3698,
+        "transmittance": 0.0020133359999999997
+      },
+      {
+        "wavenumber": 3702,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 3706,
+        "transmittance": 0.002477952
+      },
+      {
+        "wavenumber": 3710,
+        "transmittance": 0.001471284
+      },
+      {
+        "wavenumber": 3714,
+        "transmittance": 0.0022069259999999997
+      },
+      {
+        "wavenumber": 3718,
+        "transmittance": 0.00290385
+      },
+      {
+        "wavenumber": 3722,
+        "transmittance": 0.002555388
+      },
+      {
+        "wavenumber": 3726,
+        "transmittance": 0.00309744
+      },
+      {
+        "wavenumber": 3730,
+        "transmittance": 0.0018584639999999998
+      },
+      {
+        "wavenumber": 3734,
+        "transmittance": 0.0022069259999999997
+      },
+      {
+        "wavenumber": 3738,
+        "transmittance": 0.002671542
+      },
+      {
+        "wavenumber": 3742,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 3746,
+        "transmittance": 0.0024005159999999997
+      },
+      {
+        "wavenumber": 3750,
+        "transmittance": 0.0027876959999999997
+      },
+      {
+        "wavenumber": 3754,
+        "transmittance": 0.0020520539999999998
+      },
+      {
+        "wavenumber": 3758,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 3762,
+        "transmittance": 0.0027876959999999997
+      },
+      {
+        "wavenumber": 3766,
+        "transmittance": 0.0036007739999999997
+      },
+      {
+        "wavenumber": 3770,
+        "transmittance": 0.0033684659999999996
+      },
+      {
+        "wavenumber": 3774,
+        "transmittance": 0.0030200039999999997
+      },
+      {
+        "wavenumber": 3778,
+        "transmittance": 0.002284362
+      },
+      {
+        "wavenumber": 3782,
+        "transmittance": 0.0022069259999999997
+      },
+      {
+        "wavenumber": 3786,
+        "transmittance": 0.003252312
+      },
+      {
+        "wavenumber": 3790,
+        "transmittance": 0.0024005159999999997
+      },
+      {
+        "wavenumber": 3794,
+        "transmittance": 0.00212949
+      },
+      {
+        "wavenumber": 3798,
+        "transmittance": 0.000813078
+      },
+      {
+        "wavenumber": 3802,
+        "transmittance": 0.0037169279999999996
+      },
+      {
+        "wavenumber": 3806,
+        "transmittance": 0.002942568
+      },
+      {
+        "wavenumber": 3810,
+        "transmittance": 0.0028264139999999997
+      },
+      {
+        "wavenumber": 3814,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 3818,
+        "transmittance": 0.002671542
+      },
+      {
+        "wavenumber": 3822,
+        "transmittance": 0.0018584639999999998
+      },
+      {
+        "wavenumber": 3826,
+        "transmittance": 0.001626156
+      },
+      {
+        "wavenumber": 3830,
+        "transmittance": 0.001974618
+      },
+      {
+        "wavenumber": 3834,
+        "transmittance": 0.00154872
+      },
+      {
+        "wavenumber": 3838,
+        "transmittance": 0.000735642
+      },
+      {
+        "wavenumber": 3842,
+        "transmittance": 0.0011228219999999999
+      },
+      {
+        "wavenumber": 3846,
+        "transmittance": 0.0017810279999999998
+      },
+      {
+        "wavenumber": 3850,
+        "transmittance": 0.00019359
+      },
+      {
+        "wavenumber": 3854,
+        "transmittance": 0.00019359
+      },
+      {
+        "wavenumber": 3858,
+        "transmittance": 0.00034846199999999996
+      },
+      {
+        "wavenumber": 3862,
+        "transmittance": 0.00135513
+      },
+      {
+        "wavenumber": 3866,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 3870,
+        "transmittance": 0.000619488
+      },
+      {
+        "wavenumber": 3874,
+        "transmittance": 0.0008905139999999999
+      },
+      {
+        "wavenumber": 3878,
+        "transmittance": 0.0022456439999999998
+      },
+      {
+        "wavenumber": 3882,
+        "transmittance": 0.001432566
+      },
+      {
+        "wavenumber": 3886,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 3890,
+        "transmittance": 0.0020520539999999998
+      },
+      {
+        "wavenumber": 3894,
+        "transmittance": 0.0018584639999999998
+      },
+      {
+        "wavenumber": 3898,
+        "transmittance": 0.001432566
+      },
+      {
+        "wavenumber": 3902,
+        "transmittance": 0.0005033339999999999
+      },
+      {
+        "wavenumber": 3906,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 3910,
+        "transmittance": 0.001626156
+      },
+      {
+        "wavenumber": 3914,
+        "transmittance": 0.002168208
+      },
+      {
+        "wavenumber": 3918,
+        "transmittance": 0.000309744
+      },
+      {
+        "wavenumber": 3922,
+        "transmittance": 0.0013938479999999998
+      },
+      {
+        "wavenumber": 3926,
+        "transmittance": 0.0018971819999999999
+      },
+      {
+        "wavenumber": 3930,
+        "transmittance": 0.001277694
+      },
+      {
+        "wavenumber": 3934,
+        "transmittance": 0.001084104
+      },
+      {
+        "wavenumber": 3938,
+        "transmittance": 0.001238976
+      },
+      {
+        "wavenumber": 3942,
+        "transmittance": 0.0022456439999999998
+      },
+      {
+        "wavenumber": 3946,
+        "transmittance": 0.002361798
+      },
+      {
+        "wavenumber": 3950,
+        "transmittance": 0.002284362
+      },
+      {
+        "wavenumber": 3954,
+        "transmittance": 0.0020520539999999998
+      },
+      {
+        "wavenumber": 3958,
+        "transmittance": 0.00232308
+      },
+      {
+        "wavenumber": 3962,
+        "transmittance": 0.001471284
+      },
+      {
+        "wavenumber": 3966,
+        "transmittance": 0.0020520539999999998
+      }
+    ],
+    "signal_labels": {
+      "z": {
+        "assignment": "-CH3 stretch (asym.) (alkyl, methyl group)",
+        "wavenumber": 2975,
+        "intensity": "strong"
+      },
+      "y": {
+        "assignment": "-CH2- stretch (asym.) (alkyl, methylene unit)",
+        "wavenumber": 2930,
+        "intensity": "strong"
+      },
+      "x": {
+        "assignment": "C-H bend (scissor) (alkyl, methyl or methylene)",
+        "wavenumber": 1471,
+        "intensity": "strong"
+      },
+      "w": {
+        "assignment": "C-C stretch (alkyl)",
+        "wavenumber": 835,
+        "intensity": "strong"
+      }
+    }
+  }
+}
