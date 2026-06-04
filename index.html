@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpecTry: Spectroscopy Practice Tool</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #fafaf7;
+    --accent: #6b4423;
+    --accent-light: #d4c1a8;
+    --grid: #e0ddd6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 3rem 2rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: var(--accent);
+  }
+
+  p {
+    margin-bottom: 1rem;
+  }
+
+  .tool-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .tool-list li {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+  }
+
+  .tool-list a {
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 1.05rem;
+  }
+
+  .tool-list a:hover {
+    text-decoration: underline;
+  }
+
+  .tool-desc {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+
+  .status {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .status-proto {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .status-active {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--grid);
+    font-size: 0.85rem;
+    color: #999;
+  }
+</style>
+</head>
+<body>
+
+<h1>SpecTry</h1>
+<p class="subtitle">Spectroscopy practice tool for CHM 251 (Organic Chemistry I)</p>
+
+<p>
+  Interactive practice with IR, MS, ¹H NMR, and ¹³C NMR spectra.
+  Built for students learning to interpret spectra and connect them to molecular structure.
+</p>
+
+<h2>Spectrum Viewers</h2>
+<ul class="tool-list">
+  <li>
+    <a href="tools/ms-viewer-prototype.html">Mass Spectrum (MS) Viewer</a>
+    <span class="status status-proto">prototype</span>
+    <div class="tool-desc">Stick plot with molecular ion and isotope pattern labels</div>
+  </li>
+  <li>
+    <a href="tools/ir-viewer-prototype.html">IR Spectrum Viewer</a>
+    <span class="status status-proto">prototype</span>
+    <div class="tool-desc">Continuous transmittance trace with functional group labels</div>
+  </li>
+  <li>
+    <a href="tools/c13-viewer-prototype.html">¹³C NMR Viewer</a>
+    <span class="status status-proto">prototype</span>
+    <div class="tool-desc">Stick plot with chemical shift labels and assignments</div>
+  </li>
+  <li>
+    <a href="tools/h1-viewer-prototype.html">¹H NMR Viewer</a>
+    <span class="status status-proto">prototype</span>
+    <div class="tool-desc">Simulated NMR trace with multiplet patterns, shift, and integration</div>
+  </li>
+</ul>
+
+<h2>Authoring Tools</h2>
+<ul class="tool-list">
+  <li>
+    <a href="tools/spectroscopy-converter.html">Spectroscopy Converter</a>
+    <span class="status status-active">active</span>
+    <div class="tool-desc">Convert SDBS/NIST data into compound JSON files for the practice tool</div>
+  </li>
+</ul>
+
+<footer>
+  SpecTry is an open educational resource for organic chemistry spectroscopy practice.
+</footer>
+
+</body>
+</html>
