@@ -126,10 +126,7 @@
 <div style="margin-bottom: 1.5rem;">
   <label for="compound-select" style="font-weight: 600; margin-right: 0.5rem;">Compound:</label>
   <select id="compound-select" style="font-family: 'SF Mono','Menlo','Consolas',monospace; font-size: 0.9rem; padding: 0.3rem 0.5rem; border: 1px solid var(--grid); border-radius: 3px;">
-    <option value="benzaldehyde">benzaldehyde</option>
-    <option value="ethyl_acetate">ethyl acetate</option>
-    <option value="1_bromopropane">1-bromopropane</option>
-    <option value="isopropanol">isopropanol</option>
+    <option value="">loading...</option>
   </select>
 </div>
 
@@ -313,9 +310,9 @@ function render13C(container, compound, options = {}) {
     for (let i = 1; i < ppmLabels.length; i++) {
       const prev = ppmLabels[i - 1];
       const curr = ppmLabels[i];
-      const prevHalfW = prev.text.length * 2.75 + 2;
-      const currHalfW = curr.text.length * 2.75 + 2;
-      const minGap = prevHalfW + currHalfW + 3;
+      const prevHalfW = prev.text.length * 3 + 3;
+      const currHalfW = curr.text.length * 3 + 3;
+      const minGap = prevHalfW + currHalfW + 4;
       const overlap = minGap - (curr.xPx - prev.xPx);
       if (overlap > 0 && Math.abs(curr.yPx - prev.yPx) < 16) {
         const nudge = Math.ceil(overlap / 2);
@@ -423,7 +420,18 @@ async function loadCompound(id) {
 
 const select = document.getElementById('compound-select');
 select.addEventListener('change', () => loadCompound(select.value));
-loadCompound(select.value);
+
+fetch('../data/compounds.json')
+  .then(r => r.json())
+  .then(compounds => {
+    select.innerHTML = compounds.map(c =>
+      `<option value="${c.id}">${c.name}</option>`
+    ).join('');
+    loadCompound(select.value);
+  })
+  .catch(() => {
+    select.innerHTML = '<option value="">failed to load compound list</option>';
+  });
 </script>
 </body>
 </html>

@@ -78,7 +78,7 @@
 
   .signal-label {
     font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     fill: var(--accent);
     text-anchor: middle;
@@ -86,8 +86,8 @@
 
   .signal-detail {
     font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
-    font-size: 9px;
-    fill: #666;
+    font-size: 10px;
+    fill: #555;
     text-anchor: middle;
   }
 
@@ -129,10 +129,7 @@
 <div style="margin-bottom: 1.5rem;">
   <label for="compound-select" style="font-weight: 600; margin-right: 0.5rem;">Compound:</label>
   <select id="compound-select" style="font-family: 'SF Mono','Menlo','Consolas',monospace; font-size: 0.9rem; padding: 0.3rem 0.5rem; border: 1px solid var(--grid); border-radius: 3px;">
-    <option value="ethyl_acetate">ethyl acetate</option>
-    <option value="1_bromopropane">1-bromopropane</option>
-    <option value="isopropanol">isopropanol</option>
-    <option value="benzaldehyde">benzaldehyde</option>
+    <option value="">loading...</option>
   </select>
 </div>
 
@@ -175,12 +172,12 @@ function render1H(container, compound, options = {}) {
     : 400; // fallback
 
   // Lorentzian half-width at half-max in ppm
-  // ~1.5 Hz is typical solution-state linewidth
-  const lwHz = 1.5;
+  // ~0.8 Hz gives sharp, well-resolved peaks (high-field instrument look)
+  const lwHz = 0.8;
   const lwPpm = lwHz / specFreq;
 
-  // Determine x-axis range: 0 to max ppm rounded up to next integer, +0.5 padding
-  const maxPpm = Math.ceil(d3.max(peaks, d => d.ppm)) + 0.5;
+  // Fixed x-axis range: standard 1H NMR range
+  const maxPpm = 12;
   const minPpm = -0.5;
 
   // Generate simulated spectrum via Lorentzian sum
@@ -303,12 +300,8 @@ function render1H(container, compound, options = {}) {
       const traceAtShift = trace.find(t => Math.abs(t.ppm - info.shift) < step * 1.5);
       const traceY = traceAtShift ? traceAtShift.y : 50;
 
-      // Build detail line: multiplicity, J, integration
-      let detail = info.multiplicity;
-      if (info.j_hz && info.j_hz.length > 0) {
-        detail += ', J=' + info.j_hz.join(', ') + ' Hz';
-      }
-      detail += ', ' + info.integration + 'H';
+      // Build detail line: ppm, multiplicity, integration
+      let detail = info.shift.toFixed(2) + ' ppm, ' + info.multiplicity + ', ' + info.integration + 'H';
 
       return {
         key, shift: info.shift, traceY,
@@ -326,7 +319,7 @@ function render1H(container, compound, options = {}) {
       for (let i = 1; i < labelEntries.length; i++) {
         const prev = labelEntries[i - 1];
         const curr = labelEntries[i];
-        const minGap = 55;
+        const minGap = 80;
         const overlap = minGap - (curr.xPx - prev.xPx);
         if (overlap > 0) {
           const nudge = Math.ceil(overlap / 2);
@@ -465,7 +458,18 @@ async function loadCompound(id) {
 
 const select = document.getElementById('compound-select');
 select.addEventListener('change', () => loadCompound(select.value));
-loadCompound(select.value);
+
+fetch('../data/compounds.json')
+  .then(r => r.json())
+  .then(compounds => {
+    select.innerHTML = compounds.map(c =>
+      `<option value="${c.id}">${c.name}</option>`
+    ).join('');
+    loadCompound(select.value);
+  })
+  .catch(() => {
+    select.innerHTML = '<option value="">failed to load compound list</option>';
+  });
 </script>
 </body>
 </html>

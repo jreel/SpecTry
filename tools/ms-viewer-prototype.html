@@ -150,6 +150,13 @@
 </head>
 <body>
 
+<div style="margin-bottom: 1.5rem;">
+  <label for="compound-select" style="font-weight: 600; margin-right: 0.5rem;">Compound:</label>
+  <select id="compound-select" style="font-family: 'SF Mono','Menlo','Consolas',monospace; font-size: 0.9rem; padding: 0.3rem 0.5rem; border: 1px solid var(--grid); border-radius: 3px;">
+    <option value="">loading...</option>
+  </select>
+</div>
+
 <h2 style="font-size:1rem; margin-bottom:0.5rem;">Demo 1: Full display (study/review mode)</h2>
 <div id="ms-chart"></div>
 
@@ -164,40 +171,6 @@
 // MS Spectrum Renderer
 // Reads compound JSON and draws a stick-plot mass spectrum.
 // ============================================================
-
-// Embedded test data: 1-bromopropane (has halogen isotope pattern)
-const compoundData = {
-  "name": "1-bromopropane",
-  "formula": "C3H7Br",
-  "molecular_weight": 122.99,
-  "MS": {
-    "raw_peaks": [
-      { "mz": 124, "relative_intensity": 8.3 },
-      { "mz": 122, "relative_intensity": 8.6 },
-      { "mz": 109, "relative_intensity": 1.2 },
-      { "mz": 107, "relative_intensity": 1.5 },
-      { "mz": 95, "relative_intensity": 1 },
-      { "mz": 93, "relative_intensity": 1.1 },
-      { "mz": 81, "relative_intensity": 1.2 },
-      { "mz": 79, "relative_intensity": 1.4 },
-      { "mz": 43, "relative_intensity": 41.3 },
-      { "mz": 42, "relative_intensity": 15.8 },
-      { "mz": 41, "relative_intensity": 100 },
-      { "mz": 40, "relative_intensity": 8.2 },
-      { "mz": 39, "relative_intensity": 58 },
-      { "mz": 38, "relative_intensity": 8.7 },
-      { "mz": 29, "relative_intensity": 10.8 },
-      { "mz": 28, "relative_intensity": 6.1 },
-      { "mz": 27, "relative_intensity": 42.6 },
-      { "mz": 26, "relative_intensity": 9 },
-      { "mz": 15, "relative_intensity": 5.1 }
-    ],
-    "signal_labels": {
-      "M": { "assignment": "molecular ion", "mz": 122 },
-      "Br": { "assignment": "M+2 isotopic peak (Br)", "mz": 124 }
-    }
-  }
-};
 
 function renderMS(container, compound, options = {}) {
   const ms = compound.MS;
@@ -493,17 +466,50 @@ function renderMS(container, compound, options = {}) {
     });
 }
 
-// Demo 1: render with full labels (default; for answer review / study mode)
-renderMS('#ms-chart', compoundData);
+// --------------- Load and render ---------------
+async function loadCompound(id) {
+  try {
+    const resp = await fetch(`../data/${id}.json`);
+    if (!resp.ok) throw new Error(resp.statusText);
+    const data = await resp.json();
 
-// Demo 2: render as a "determine the MW" question (bare spectrum)
-renderMS('#ms-chart-bare', compoundData, {
-  showName: false,
-  showFormula: false,
-  showMW: false,
-  showSignalLabels: false,
-  showTooltipLabels: false,
-});
+    if (!data.MS || !data.MS.raw_peaks) {
+      document.getElementById('ms-chart').innerHTML =
+        '<p style="color:var(--error);padding:1rem;">No MS data for this compound.</p>';
+      document.getElementById('ms-chart-bare').innerHTML = '';
+      return;
+    }
+
+    renderMS('#ms-chart', data);
+
+    renderMS('#ms-chart-bare', data, {
+      showName: false,
+      showFormula: false,
+      showMW: false,
+      showSignalLabels: false,
+      showTooltipLabels: false,
+    });
+  } catch(e) {
+    document.getElementById('ms-chart').innerHTML =
+      `<p style="color:var(--error);padding:1rem;">Could not load ${id}.json: ${e.message}</p>`;
+    document.getElementById('ms-chart-bare').innerHTML = '';
+  }
+}
+
+const select = document.getElementById('compound-select');
+select.addEventListener('change', () => loadCompound(select.value));
+
+fetch('../data/compounds.json')
+  .then(r => r.json())
+  .then(compounds => {
+    select.innerHTML = compounds.map(c =>
+      `<option value="${c.id}">${c.name}</option>`
+    ).join('');
+    loadCompound(select.value);
+  })
+  .catch(() => {
+    select.innerHTML = '<option value="">failed to load compound list</option>';
+  });
 </script>
 </body>
 </html>

@@ -132,10 +132,7 @@
 <div style="margin-bottom: 1.5rem;">
   <label for="compound-select" style="font-weight: 600; margin-right: 0.5rem;">Compound:</label>
   <select id="compound-select" style="font-family: 'SF Mono','Menlo','Consolas',monospace; font-size: 0.9rem; padding: 0.3rem 0.5rem; border: 1px solid var(--grid); border-radius: 3px;">
-    <option value="ethyl_acetate">ethyl acetate</option>
-    <option value="1_bromopropane">1-bromopropane</option>
-    <option value="isopropanol">isopropanol</option>
-    <option value="benzaldehyde">benzaldehyde</option>
+    <option value="">loading...</option>
   </select>
 </div>
 
@@ -194,7 +191,7 @@ function renderIR(container, compound, options = {}) {
     .range([0, plotW]);
 
   const y = d3.scaleLinear()
-    .domain([0, 105])
+    .domain([0, 100])
     .range([plotH, 0]);
 
   // Clear and create SVG
@@ -286,17 +283,15 @@ function renderIR(container, compound, options = {}) {
     .text('Transmittance (%)');
 
   // Smooth the curve to counteract quantized transmittance data.
-  // Adaptive radius: target ~8 cm⁻¹ smoothing window regardless of point density.
-  const avgSpacing = Math.abs(curve[0].wavenumber - curve[curve.length - 1].wavenumber) / curve.length;
-  const smoothRadius = Math.max(2, Math.round(8 / avgSpacing));
-  const smoothedCurve = gaussianSmooth(curve, tScale, smoothRadius);
+  // Gaussian kernel with radius proportional to data density.
+  const smoothedCurve = gaussianSmooth(curve, tScale, 4);
 
   // Draw the IR trace
   const clipId = 'plot-clip-' + container.replace(/[^a-zA-Z0-9]/g, '');
   const line = d3.line()
     .x(d => x(d.wavenumber))
     .y(d => y(d.t))
-    .curve(d3.curveMonotoneX);
+    .curve(d3.curveLinear);
 
   g.append('path')
     .datum(smoothedCurve)
@@ -553,8 +548,18 @@ if (isEmbed) {
     }
   });
 } else {
-  // Normal standalone mode: load from file
-  loadCompound(select.value);
+  // Load compound manifest and populate dropdown
+  fetch('../data/compounds.json')
+    .then(r => r.json())
+    .then(compounds => {
+      select.innerHTML = compounds.map(c =>
+        `<option value="${c.id}">${c.name}</option>`
+      ).join('');
+      loadCompound(select.value);
+    })
+    .catch(() => {
+      select.innerHTML = '<option value="">failed to load compound list</option>';
+    });
 }
 </script>
 </body>
