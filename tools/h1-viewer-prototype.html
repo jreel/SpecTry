@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1H NMR Spectrum Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #fafaf7;
+    --accent: #6b4423;
+    --accent-light: #d4c1a8;
+    --error: #8b2c2c;
+    --success: #2c5f3f;
+    --grid: #e0ddd6;
+    --peak: #2a5a8c;
+    --peak-labeled: #8b2c2c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .nmr-chart {
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    margin-bottom: 2rem;
+  }
+
+  .axis text {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    fill: var(--ink);
+  }
+
+  .axis-label {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 13px;
+    fill: var(--ink);
+  }
+
+  .axis path, .axis line {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .nmr-trace {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .label-marker {
+    stroke: var(--peak-labeled);
+    stroke-width: 1;
+    stroke-dasharray: 3, 3;
+  }
+
+  .label-dot {
+    fill: var(--peak-labeled);
+  }
+
+  .label-text {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 9px;
+    fill: var(--peak-labeled);
+    text-anchor: middle;
+  }
+
+  .signal-label {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 10px;
+    font-weight: 600;
+    fill: var(--accent);
+    text-anchor: middle;
+  }
+
+  .signal-detail {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 9px;
+    fill: #666;
+    text-anchor: middle;
+  }
+
+  .title-text {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 600;
+    fill: var(--ink);
+  }
+
+  .tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 3px;
+    padding: 0.35rem 0.5rem;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+
+  .tooltip.visible { opacity: 1; }
+
+  h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+
+  .demo-note {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<div style="margin-bottom: 1.5rem;">
+  <label for="compound-select" style="font-weight: 600; margin-right: 0.5rem;">Compound:</label>
+  <select id="compound-select" style="font-family: 'SF Mono','Menlo','Consolas',monospace; font-size: 0.9rem; padding: 0.3rem 0.5rem; border: 1px solid var(--grid); border-radius: 3px;">
+    <option value="ethyl_acetate">ethyl acetate</option>
+    <option value="1_bromopropane">1-bromopropane</option>
+    <option value="isopropanol">isopropanol</option>
+    <option value="benzaldehyde">benzaldehyde</option>
+  </select>
+</div>
+
+<h2>Demo 1: Full display (study/review mode)</h2>
+<div class="nmr-chart" id="h1-chart-full"></div>
+
+<h2 style="margin-top: 2rem;">Demo 2: "Read the chemical shift" question mode</h2>
+<p class="demo-note">showName/Formula/MW: false, showSignalLabels: false</p>
+<div class="nmr-chart" id="h1-chart-bare"></div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ============================================================
+// 1H NMR Spectrum Renderer
+// Simulates continuous NMR trace from discrete peak data
+// using Lorentzian line shapes.
+// ============================================================
+
+function render1H(container, compound, options = {}) {
+  const nmr = compound['1H_NMR'];
+  if (!nmr || !nmr.raw_peaks || nmr.raw_peaks.length === 0) return;
+
+  const peaks = nmr.raw_peaks;
+  const labels = nmr.signal_labels || {};
+
+  // Display options
+  const show = {
+    name:          options.showName !== false,
+    formula:       options.showFormula !== false,
+    mw:            options.showMW !== false,
+    signalLabels:  options.showSignalLabels !== false,
+    tooltipLabels: options.showTooltipLabels !== false,
+  };
+
+  // Infer spectrometer frequency from hz/ppm ratio
+  const validPeaks = peaks.filter(p => p.ppm > 0.5);
+  const specFreq = validPeaks.length > 0
+    ? validPeaks.reduce((sum, p) => sum + p.hz / p.ppm, 0) / validPeaks.length
+    : 400; // fallback
+
+  // Lorentzian half-width at half-max in ppm
+  // ~1.5 Hz is typical solution-state linewidth
+  const lwHz = 1.5;
+  const lwPpm = lwHz / specFreq;
+
+  // Determine x-axis range: 0 to max ppm rounded up to next integer, +0.5 padding
+  const maxPpm = Math.ceil(d3.max(peaks, d => d.ppm)) + 0.5;
+  const minPpm = -0.5;
+
+  // Generate simulated spectrum via Lorentzian sum
+  // Fine resolution: 0.001 ppm steps
+  const step = 0.001;
+  const nPoints = Math.ceil((maxPpm - minPpm) / step);
+  const trace = [];
+
+  // Normalize peak intensities to max = 1
+  const maxInt = d3.max(peaks, d => d.intensity);
+
+  for (let i = 0; i <= nPoints; i++) {
+    const ppm = maxPpm - i * step; // high to low
+    let sumY = 0;
+    for (const peak of peaks) {
+      const delta = ppm - peak.ppm;
+      // Lorentzian: I * w^2 / (delta^2 + w^2)
+      sumY += (peak.intensity / maxInt) * (lwPpm * lwPpm) / (delta * delta + lwPpm * lwPpm);
+    }
+    trace.push({ ppm, y: sumY });
+  }
+
+  // Normalize trace to 0-100 for plotting
+  const traceMax = d3.max(trace, d => d.y);
+  trace.forEach(d => d.y = (d.y / traceMax) * 100);
+
+  // Dimensions
+  const width = options.width || 800;
+  const height = options.height || 350;
+  const margin = { top: 40, right: 30, bottom: 55, left: 30 };
+  const plotW = width - margin.left - margin.right;
+  const plotH = height - margin.top - margin.bottom;
+
+  // Scales
+  const x = d3.scaleLinear()
+    .domain([maxPpm, minPpm])
+    .range([0, plotW]);
+
+  const y = d3.scaleLinear()
+    .domain([0, 110])
+    .range([plotH, 0]);
+
+  // Clear and create SVG
+  d3.select(container).selectAll('*').remove();
+  const tooltip = document.getElementById('tooltip');
+
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', `0 0 ${width} ${height}`);
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Clip path
+  const clipId = 'h1-clip-' + container.replace(/[^a-zA-Z0-9]/g, '');
+  g.append('defs').append('clipPath')
+    .attr('id', clipId)
+    .append('rect')
+    .attr('width', plotW)
+    .attr('height', plotH);
+
+  // Background
+  g.append('rect')
+    .attr('width', plotW)
+    .attr('height', plotH)
+    .attr('fill', 'white');
+
+  // X axis: major ticks every 1 ppm, minor every 0.5
+  const majorTicks = d3.range(0, maxPpm + 1, 1);
+  const minorTicks = d3.range(0, maxPpm + 0.5, 0.5).filter(v => v % 1 !== 0);
+
+  const xAxisMajor = d3.axisBottom(x)
+    .tickSizeOuter(0)
+    .tickValues(majorTicks)
+    .tickSize(6);
+
+  const xAxisMinor = d3.axisBottom(x)
+    .tickSizeOuter(0)
+    .tickValues(minorTicks)
+    .tickSize(3)
+    .tickFormat('');
+
+  g.append('g')
+    .attr('class', 'axis x-axis')
+    .attr('transform', `translate(0,${plotH})`)
+    .call(xAxisMajor);
+
+  g.append('g')
+    .attr('class', 'axis x-axis minor')
+    .attr('transform', `translate(0,${plotH})`)
+    .call(xAxisMinor)
+    .selectAll('text').remove();
+
+  // Axis label
+  g.append('text')
+    .attr('class', 'axis-label')
+    .attr('x', plotW / 2)
+    .attr('y', plotH + 42)
+    .attr('text-anchor', 'middle')
+    .text('Chemical Shift (ppm)');
+
+  // Draw the simulated trace
+  const line = d3.line()
+    .x(d => x(d.ppm))
+    .y(d => y(d.y))
+    .curve(d3.curveLinear);
+
+  g.append('path')
+    .datum(trace)
+    .attr('class', 'nmr-trace')
+    .attr('clip-path', `url(#${clipId})`)
+    .attr('d', line);
+
+  // Signal labels
+  if (show.signalLabels && Object.keys(labels).length > 0) {
+    const labelEntries = Object.entries(labels).map(([key, info]) => {
+      // Find the trace value at the signal's shift
+      const traceAtShift = trace.find(t => Math.abs(t.ppm - info.shift) < step * 1.5);
+      const traceY = traceAtShift ? traceAtShift.y : 50;
+
+      // Build detail line: multiplicity, J, integration
+      let detail = info.multiplicity;
+      if (info.j_hz && info.j_hz.length > 0) {
+        detail += ', J=' + info.j_hz.join(', ') + ' Hz';
+      }
+      detail += ', ' + info.integration + 'H';
+
+      return {
+        key, shift: info.shift, traceY,
+        assignment: info.assignment,
+        detail,
+        xPx: x(info.shift),
+      };
+    });
+
+    // Sort by x position for collision resolution
+    labelEntries.sort((a, b) => a.xPx - b.xPx);
+
+    // Collision resolution on label positions
+    for (let pass = 0; pass < 3; pass++) {
+      for (let i = 1; i < labelEntries.length; i++) {
+        const prev = labelEntries[i - 1];
+        const curr = labelEntries[i];
+        const minGap = 55;
+        const overlap = minGap - (curr.xPx - prev.xPx);
+        if (overlap > 0) {
+          const nudge = Math.ceil(overlap / 2);
+          prev.xPx -= nudge;
+          curr.xPx += nudge;
+        }
+      }
+    }
+
+    const labelGroup = g.append('g').attr('class', 'h1-labels');
+
+    labelEntries.forEach(lbl => {
+      const peakX = x(lbl.shift);
+      const peakY = y(lbl.traceY);
+
+      // Drop line from label to peak top
+      labelGroup.append('line')
+        .attr('class', 'label-marker')
+        .attr('x1', lbl.xPx)
+        .attr('y1', 20)
+        .attr('x2', peakX)
+        .attr('y2', peakY - 3);
+
+      // Dot at peak
+      labelGroup.append('circle')
+        .attr('class', 'label-dot')
+        .attr('cx', peakX)
+        .attr('cy', peakY)
+        .attr('r', 2);
+
+      // Label key
+      labelGroup.append('text')
+        .attr('class', 'signal-label')
+        .attr('x', lbl.xPx)
+        .attr('y', 10)
+        .text(lbl.key);
+
+      // Detail line (multiplicity, J, integration)
+      labelGroup.append('text')
+        .attr('class', 'signal-detail')
+        .attr('x', lbl.xPx)
+        .attr('y', 22)
+        .text(lbl.detail);
+    });
+  }
+
+  // Title
+  let title = '\u00B9H NMR';
+  if (show.name) title += ': ' + compound.name;
+  const meta = [];
+  if (show.formula && compound.formula) meta.push(compound.formula);
+  if (show.mw && compound.molecular_weight) meta.push('MW ' + compound.molecular_weight);
+  if (nmr.solvent) meta.push(nmr.solvent);
+  if (meta.length) title += ' (' + meta.join(', ') + ')';
+
+  svg.append('text')
+    .attr('class', 'title-text')
+    .attr('x', margin.left)
+    .attr('y', 24)
+    .text(title);
+
+  // Crosshair tooltip
+  const overlay = g.append('rect')
+    .attr('width', plotW)
+    .attr('height', plotH)
+    .attr('fill', 'transparent')
+    .attr('cursor', 'crosshair');
+
+  const crosshairV = g.append('line')
+    .attr('stroke', '#999')
+    .attr('stroke-width', 0.5)
+    .attr('stroke-dasharray', '4,3')
+    .style('display', 'none');
+
+  overlay
+    .on('mouseenter', () => { crosshairV.style('display', null); })
+    .on('mousemove', function(event) {
+      const [mx] = d3.pointer(event);
+      const ppm = x.invert(mx);
+
+      crosshairV.attr('x1', mx).attr('x2', mx).attr('y1', 0).attr('y2', plotH);
+
+      let html = `<strong>${ppm.toFixed(3)} ppm</strong>`;
+
+      // Check if near a labeled signal
+      if (show.tooltipLabels) {
+        for (const [key, info] of Object.entries(labels)) {
+          if (Math.abs(info.shift - ppm) < 0.1) {
+            html += `<br>${key}: ${info.assignment}`;
+            html += `<br>${info.multiplicity}, ${info.integration}H`;
+            break;
+          }
+        }
+      }
+
+      tooltip.innerHTML = html;
+      tooltip.classList.add('visible');
+      tooltip.style.left = (event.pageX + 12) + 'px';
+      tooltip.style.top = (event.pageY - 10) + 'px';
+    })
+    .on('mouseleave', () => {
+      crosshairV.style('display', 'none');
+      tooltip.classList.remove('visible');
+    });
+}
+
+// --------------- Load and render ---------------
+async function loadCompound(id) {
+  try {
+    const resp = await fetch(`../data/${id}.json`);
+    if (!resp.ok) throw new Error(resp.statusText);
+    const data = await resp.json();
+
+    if (!data['1H_NMR'] || !data['1H_NMR'].raw_peaks) {
+      document.getElementById('h1-chart-full').innerHTML =
+        '<p style="color:var(--error);padding:1rem;">No 1H NMR data for this compound.</p>';
+      document.getElementById('h1-chart-bare').innerHTML = '';
+      return;
+    }
+
+    render1H('#h1-chart-full', data);
+
+    render1H('#h1-chart-bare', data, {
+      showName: false,
+      showFormula: false,
+      showMW: false,
+      showSignalLabels: false,
+      showTooltipLabels: false,
+    });
+  } catch(e) {
+    document.getElementById('h1-chart-full').innerHTML =
+      `<p style="color:var(--error);padding:1rem;">Could not load ${id}.json: ${e.message}</p>`;
+    document.getElementById('h1-chart-bare').innerHTML = '';
+  }
+}
+
+const select = document.getElementById('compound-select');
+select.addEventListener('change', () => loadCompound(select.value));
+loadCompound(select.value);
+</script>
+</body>
+</html>

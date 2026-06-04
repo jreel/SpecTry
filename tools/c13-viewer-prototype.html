@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>13C NMR Spectrum Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #fafaf7;
+    --accent: #6b4423;
+    --accent-light: #d4c1a8;
+    --error: #8b2c2c;
+    --success: #2c5f3f;
+    --grid: #e0ddd6;
+    --peak: #2a5a8c;
+    --peak-labeled: #8b2c2c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .nmr-chart {
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    margin-bottom: 2rem;
+  }
+
+  .axis text {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    fill: var(--ink);
+  }
+
+  .axis-label {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 13px;
+    fill: var(--ink);
+  }
+
+  .axis path, .axis line {
+    stroke: var(--ink);
+    stroke-width: 1;
+  }
+
+  .grid line {
+    stroke: var(--grid);
+    stroke-width: 0.5;
+    stroke-dasharray: 2, 4;
+  }
+
+  .grid path { stroke: none; }
+
+  .peak-line {
+    stroke: var(--peak);
+    stroke-width: 1.5;
+  }
+
+  .peak-label {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 10px;
+    fill: var(--ink);
+    text-anchor: middle;
+  }
+
+  .signal-label {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 11px;
+    font-weight: 600;
+    fill: var(--accent);
+    text-anchor: middle;
+  }
+
+  .title-text {
+    font-family: Charter, 'Bitstream Charter', 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 600;
+    fill: var(--ink);
+  }
+
+  .tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid var(--grid);
+    border-radius: 3px;
+    padding: 0.35rem 0.5rem;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+
+  .tooltip.visible { opacity: 1; }
+
+  .peak-hit {
+    stroke: transparent;
+    stroke-width: 8;
+    cursor: crosshair;
+    fill: none;
+  }
+
+  h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+
+  .demo-note {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<div style="margin-bottom: 1.5rem;">
+  <label for="compound-select" style="font-weight: 600; margin-right: 0.5rem;">Compound:</label>
+  <select id="compound-select" style="font-family: 'SF Mono','Menlo','Consolas',monospace; font-size: 0.9rem; padding: 0.3rem 0.5rem; border: 1px solid var(--grid); border-radius: 3px;">
+    <option value="benzaldehyde">benzaldehyde</option>
+    <option value="ethyl_acetate">ethyl acetate</option>
+    <option value="1_bromopropane">1-bromopropane</option>
+    <option value="isopropanol">isopropanol</option>
+  </select>
+</div>
+
+<h2>Demo 1: Full display (study/review mode)</h2>
+<div class="nmr-chart" id="c13-chart-full"></div>
+
+<h2 style="margin-top: 2rem;">Demo 2: "Count the unique carbons" question mode</h2>
+<p class="demo-note">showName/Formula/MW: false, showSignalLabels: false, showPpmLabels: false</p>
+<div class="nmr-chart" id="c13-chart-bare"></div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ============================================================
+// 13C NMR Spectrum Renderer
+// Stick plot with ppm axis (high to low).
+// ============================================================
+
+function render13C(container, compound, options = {}) {
+  const nmr = compound['13C_NMR'];
+  if (!nmr || !nmr.raw_peaks || nmr.raw_peaks.length === 0) return;
+
+  const peaks = nmr.raw_peaks;
+  const labels = nmr.signal_labels || {};
+
+  // Display options
+  const show = {
+    name:          options.showName !== false,
+    formula:       options.showFormula !== false,
+    mw:            options.showMW !== false,
+    signalLabels:  options.showSignalLabels !== false,
+    ppmLabels:     options.showPpmLabels !== false,
+    tooltipLabels: options.showTooltipLabels !== false,
+  };
+
+  // Build ppm -> label lookup
+  const ppmToLabel = {};
+  for (const [key, info] of Object.entries(labels)) {
+    // Match by closest ppm (within 0.5 ppm tolerance)
+    const matchPeak = peaks.find(p => Math.abs(p.ppm - info.shift) < 0.5);
+    if (matchPeak) {
+      const ppmKey = matchPeak.ppm;
+      if (!ppmToLabel[ppmKey]) ppmToLabel[ppmKey] = [];
+      ppmToLabel[ppmKey].push({ key, assignment: info.assignment, eqCount: info.equivalent_count });
+    }
+  }
+
+  // Dimensions
+  const width = options.width || 800;
+  const height = options.height || 350;
+  const margin = { top: 40, right: 30, bottom: 55, left: 50 };
+  const plotW = width - margin.left - margin.right;
+  const plotH = height - margin.top - margin.bottom;
+
+  // Scale: ppm high to low (convention), fixed range 0-220
+  const x = d3.scaleLinear()
+    .domain([220, 0])
+    .range([0, plotW]);
+
+  // Normalize intensities to 0-100
+  const maxIntensity = d3.max(peaks, d => d.intensity);
+  const y = d3.scaleLinear()
+    .domain([0, 105])
+    .range([plotH, 0]);
+
+  // Clear and create SVG
+  d3.select(container).selectAll('*').remove();
+  const tooltip = document.getElementById('tooltip');
+
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', `0 0 ${width} ${height}`);
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Background
+  g.append('rect')
+    .attr('width', plotW)
+    .attr('height', plotH)
+    .attr('fill', 'white');
+
+  // Axes: major ticks every 20 ppm, minor every 10
+  const majorTicks = d3.range(0, 221, 20);
+  const minorTicks = d3.range(0, 221, 10).filter(v => v % 20 !== 0);
+
+  const xAxisMajor = d3.axisBottom(x)
+    .tickSizeOuter(0)
+    .tickValues(majorTicks)
+    .tickSize(6);
+
+  const xAxisMinor = d3.axisBottom(x)
+    .tickSizeOuter(0)
+    .tickValues(minorTicks)
+    .tickSize(3)
+    .tickFormat('');
+
+  g.append('g')
+    .attr('class', 'axis x-axis')
+    .attr('transform', `translate(0,${plotH})`)
+    .call(xAxisMajor);
+
+  g.append('g')
+    .attr('class', 'axis x-axis minor')
+    .attr('transform', `translate(0,${plotH})`)
+    .call(xAxisMinor)
+    .selectAll('text').remove();
+
+  // No y-axis for 13C (intensities aren't quantitative in standard 13C)
+  // Just draw the baseline
+  g.append('line')
+    .attr('x1', 0).attr('x2', plotW)
+    .attr('y1', plotH).attr('y2', plotH)
+    .attr('stroke', 'var(--ink)').attr('stroke-width', 1);
+
+  // Axis label
+  g.append('text')
+    .attr('class', 'axis-label')
+    .attr('x', plotW / 2)
+    .attr('y', plotH + 42)
+    .attr('text-anchor', 'middle')
+    .text('Chemical Shift (ppm)');
+
+  // Draw peaks as sticks (all same height; 13C intensity isn't meaningful)
+  const peakGroup = g.append('g').attr('class', 'peaks');
+  const stickHeight = plotH * 0.85;
+
+  // Collect ppm labels for collision resolution
+  const ppmLabels = [];
+  const signalLabelsList = [];
+
+  peaks.forEach(peak => {
+    const normI = (peak.intensity / maxIntensity) * 100;
+    const lbl = ppmToLabel[peak.ppm];
+
+    peakGroup.append('line')
+      .attr('class', 'peak-line')
+      .attr('x1', x(peak.ppm))
+      .attr('x2', x(peak.ppm))
+      .attr('y1', plotH)
+      .attr('y2', plotH - stickHeight);
+
+    // Hit area
+    peakGroup.append('line')
+      .attr('class', 'peak-hit')
+      .attr('x1', x(peak.ppm))
+      .attr('x2', x(peak.ppm))
+      .attr('y1', plotH)
+      .attr('y2', plotH - stickHeight)
+      .attr('data-ppm', peak.ppm)
+      .attr('data-intensity', peak.intensity);
+
+    // Queue ppm label
+    if (show.ppmLabels) {
+      ppmLabels.push({
+        ppm: peak.ppm,
+        xPx: x(peak.ppm),
+        yPx: plotH - stickHeight - 5,
+        text: peak.ppm.toFixed(2),
+      });
+    }
+
+    // Queue signal labels
+    if (show.signalLabels && lbl) {
+      lbl.forEach((l, i) => {
+        signalLabelsList.push({
+          ppm: peak.ppm,
+          text: l.key,
+          cls: 'signal-label',
+          stackIndex: i,
+        });
+      });
+    }
+  });
+
+  // Collision resolution on ppm labels
+  ppmLabels.sort((a, b) => a.xPx - b.xPx);
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 1; i < ppmLabels.length; i++) {
+      const prev = ppmLabels[i - 1];
+      const curr = ppmLabels[i];
+      const prevHalfW = prev.text.length * 2.75 + 2;
+      const currHalfW = curr.text.length * 2.75 + 2;
+      const minGap = prevHalfW + currHalfW + 3;
+      const overlap = minGap - (curr.xPx - prev.xPx);
+      if (overlap > 0 && Math.abs(curr.yPx - prev.yPx) < 16) {
+        const nudge = Math.ceil(overlap / 2);
+        prev.xPx -= nudge;
+        curr.xPx += nudge;
+      }
+    }
+  }
+
+  // Draw ppm labels
+  const ppmLabelByPpm = {};
+  ppmLabels.forEach(lbl => {
+    ppmLabelByPpm[lbl.ppm] = lbl;
+    peakGroup.append('text')
+      .attr('class', 'peak-label')
+      .attr('x', lbl.xPx)
+      .attr('y', lbl.yPx)
+      .text(lbl.text);
+  });
+
+  // Stack signal labels above resolved ppm labels
+  signalLabelsList.forEach(sl => {
+    const anchor = ppmLabelByPpm[sl.ppm];
+    const xPos = anchor ? anchor.xPx : x(sl.ppm);
+    const baseY = anchor ? anchor.yPx : (plotH - stickHeight - 5);
+    const yPos = baseY - 13 - (sl.stackIndex * 14);
+
+    peakGroup.append('text')
+      .attr('class', sl.cls)
+      .attr('x', xPos)
+      .attr('y', yPos)
+      .text(sl.text);
+  });
+
+  // Title
+  let title = '\u00B9\u00B3C NMR';
+  if (show.name) title += ': ' + compound.name;
+  const meta = [];
+  if (show.formula && compound.formula) meta.push(compound.formula);
+  if (show.mw && compound.molecular_weight) meta.push('MW ' + compound.molecular_weight);
+  if (nmr.solvent) meta.push(nmr.solvent);
+  if (meta.length) title += ' (' + meta.join(', ') + ')';
+
+  svg.append('text')
+    .attr('class', 'title-text')
+    .attr('x', margin.left)
+    .attr('y', 24)
+    .text(title);
+
+  // Tooltip
+  svg.selectAll('.peak-hit')
+    .on('mouseenter', function(event) {
+      const ppm = +this.getAttribute('data-ppm');
+      const lbl = ppmToLabel[ppm];
+
+      let html = `<strong>${ppm.toFixed(2)} ppm</strong>`;
+      if (show.tooltipLabels && lbl) {
+        lbl.forEach(l => {
+          html += `<br>${l.key}: ${l.assignment}`;
+          if (l.eqCount > 1) html += ` (${l.eqCount}C)`;
+        });
+      }
+      tooltip.innerHTML = html;
+      tooltip.classList.add('visible');
+    })
+    .on('mousemove', function(event) {
+      tooltip.style.left = (event.pageX + 12) + 'px';
+      tooltip.style.top = (event.pageY - 10) + 'px';
+    })
+    .on('mouseleave', function() {
+      tooltip.classList.remove('visible');
+    });
+}
+
+// --------------- Load and render ---------------
+async function loadCompound(id) {
+  try {
+    const resp = await fetch(`../data/${id}.json`);
+    if (!resp.ok) throw new Error(resp.statusText);
+    const data = await resp.json();
+
+    if (!data['13C_NMR'] || !data['13C_NMR'].raw_peaks) {
+      document.getElementById('c13-chart-full').innerHTML =
+        '<p style="color:var(--error);padding:1rem;">No 13C NMR data for this compound.</p>';
+      document.getElementById('c13-chart-bare').innerHTML = '';
+      return;
+    }
+
+    render13C('#c13-chart-full', data);
+
+    render13C('#c13-chart-bare', data, {
+      showName: false,
+      showFormula: false,
+      showMW: false,
+      showSignalLabels: false,
+      showPpmLabels: false,
+      showTooltipLabels: false,
+    });
+  } catch(e) {
+    document.getElementById('c13-chart-full').innerHTML =
+      `<p style="color:var(--error);padding:1rem;">Could not load ${id}.json: ${e.message}</p>`;
+    document.getElementById('c13-chart-bare').innerHTML = '';
+  }
+}
+
+const select = document.getElementById('compound-select');
+select.addEventListener('change', () => loadCompound(select.value));
+loadCompound(select.value);
+</script>
+</body>
+</html>
