@@ -16,6 +16,14 @@ const scoreCorrect  = document.getElementById('score-correct');
 const scoreTotal    = document.getElementById('score-total');
 const difficultyEl  = document.getElementById('difficulty-select');
 const loadingEl     = document.getElementById('loading');
+const hintsEl       = document.getElementById('hints-container');
+
+// Hint elements
+const hintEls = {
+  mw:      { btn: document.getElementById('hint-mw'),      val: document.getElementById('hint-mw-value') },
+  formula: { btn: document.getElementById('hint-formula'),  val: document.getElementById('hint-formula-value') },
+  name:    { btn: document.getElementById('hint-name'),     val: document.getElementById('hint-name-value') },
+};
 
 // --- State ---
 const engine = new QuestionEngine('../data');
@@ -38,6 +46,48 @@ const RENDERERS = {
   },
 };
 
+// --- Hints ---
+
+const HINT_ORDER = ['mw', 'formula', 'name'];
+
+function resetHints() {
+  hintsEl.classList.add('hidden');
+  for (const key of HINT_ORDER) {
+    hintEls[key].btn.classList.add('hidden');
+    hintEls[key].val.classList.add('hidden');
+    hintEls[key].btn.replaceWith(hintEls[key].btn.cloneNode(true));
+    hintEls[key].btn = document.getElementById(`hint-${key}`);
+    hintEls[key].val = document.getElementById(`hint-${key}-value`);
+  }
+}
+
+function setupHints(compound) {
+  resetHints();
+
+  const data = {
+    mw:      `MW: ${compound.molecular_weight}`,
+    formula: compound.formula,
+    name:    compound.name,
+  };
+
+  // Show hints area and first button
+  hintsEl.classList.remove('hidden');
+  hintEls[HINT_ORDER[0]].btn.classList.remove('hidden');
+
+  HINT_ORDER.forEach((key, i) => {
+    hintEls[key].btn.addEventListener('click', () => {
+      // Reveal this hint's value
+      hintEls[key].btn.classList.add('hidden');
+      hintEls[key].val.textContent = data[key];
+      hintEls[key].val.classList.remove('hidden');
+
+      // Show next hint button if there is one
+      const nextKey = HINT_ORDER[i + 1];
+      if (nextKey) hintEls[nextKey].btn.classList.remove('hidden');
+    }, { once: true });
+  });
+}
+
 // --- Core flow ---
 
 async function nextQuestion() {
@@ -46,6 +96,7 @@ async function nextQuestion() {
   // Reset UI
   clearFeedback(feedbackEl);
   nextBtn.classList.add('hidden');
+  hintsEl.classList.add('hidden');
   spectrumEl.innerHTML = '';
   choicesEl.innerHTML = '';
   questionEl.textContent = '';
@@ -67,6 +118,9 @@ async function nextQuestion() {
     // Render spectrum
     const renderer = RENDERERS[question.type];
     if (renderer) renderer(question.compound, question);
+
+    // Set up progressive hints
+    setupHints(question.compound);
 
     // Show question
     questionEl.textContent = question.prompt;

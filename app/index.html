@@ -32,6 +32,20 @@
   <div id="loading">Loading question...</div>
 
   <div id="question-panel">
+    <div id="hints-container" class="hints hidden">
+      <span class="hints-label">Need a hint?</span>
+      <div class="hints-track">
+        <button id="hint-mw" class="hint-btn" data-hint="mw">Show molecular weight</button>
+        <span id="hint-mw-value" class="hint-revealed hidden"></span>
+
+        <button id="hint-formula" class="hint-btn hidden" data-hint="formula">Show molecular formula</button>
+        <span id="hint-formula-value" class="hint-revealed hidden"></span>
+
+        <button id="hint-name" class="hint-btn hidden" data-hint="name">Show compound name</button>
+        <span id="hint-name-value" class="hint-revealed hidden"></span>
+      </div>
+    </div>
+
     <p id="question-text"></p>
     <div id="choices-container"></div>
     <div id="feedback-container" class="feedback hidden"></div>

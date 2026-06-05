@@ -121,7 +121,7 @@ function matchSignal(signal) {
     if (score > bestScore) { bestScore = score; best = abs; }
   }
 
-  return bestScore >= 10 ? best : null; // require at least wavenumber match
+  return bestScore >= 13 ? best : null; // require wavenumber + at least one keyword match
 }
 
 /** Generate distractor choices based on difficulty. */
@@ -218,10 +218,35 @@ export function generate(compound, difficulty = 'medium') {
   return null;
 }
 
+/**
+ * Check which required element is missing from a compound's formula
+ * for a given diagnostic absorption category.
+ * Returns a human-readable element name, or null if all required elements are present.
+ */
+function getMissingElement(absorption, formula) {
+  if (!formula) return null;
+  const cat = absorption.cat;
+  // Nitrogen-containing groups
+  if (['amine', 'amide', 'nitrile', 'nitro'].includes(cat) && !formula.includes('N')) {
+    return 'nitrogen';
+  }
+  // Oxygen-containing groups (amide needs both N and O; N checked above)
+  if (['alcohol', 'ester', 'acid', 'ketone', 'aldehyde', 'ether',
+       'anhydride', 'acid_chloride', 'amide', 'carbonyl'].includes(cat) && !formula.includes('O')) {
+    return 'oxygen';
+  }
+  // Halogen-containing groups
+  if ((cat === 'halide' || cat === 'acid_chloride') && !/Cl|Br|F[^e]|I/.test(formula)) {
+    return 'halogens';
+  }
+  return null;
+}
+
 /** Generate feedback text explaining why the answer is right or wrong. */
 export function explain(question, selectedChoice) {
   const correct = question.correctAbsorption;
   const wn = question.targetSignal.wavenumber;
+  const formula = question.compound.formula || '';
 
   if (selectedChoice.correct) {
     let text = `The absorption at ${wn} cm\u207B\u00B9 falls within the expected range for ${correct.label.toLowerCase()} (${correct.range[0]}\u2013${correct.range[1]} cm\u207B\u00B9).`;
@@ -230,16 +255,26 @@ export function explain(question, selectedChoice) {
   }
 
   const wrong = selectedChoice.absorption;
-  let text = `${wrong.label} typically appears at ${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9`;
+  const wnInWrongRange = wn >= wrong.range[0] && wn <= wrong.range[1];
+  const missingEl = getMissingElement(wrong, formula);
 
-  const dist = Math.abs(wrong.center - wn);
-  if (dist > 300) {
-    text += `, which is a different region than the observed ${wn} cm\u207B\u00B9`;
+  let text;
+
+  if (wnInWrongRange && missingEl) {
+    // Wavenumber overlaps but compound lacks required element
+    text = `While ${wn} cm\u207B\u00B9 does fall within the range for ${wrong.label.toLowerCase()} (${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9), this compound\u2019s molecular formula (${formula}) contains no ${missingEl}, ruling out that assignment.`;
+  } else if (wnInWrongRange) {
+    // Wavenumber overlaps and elements are present; use compound context
+    text = `While ${wn} cm\u207B\u00B9 does fall within the range for ${wrong.label.toLowerCase()} (${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9), the compound\u2019s structure indicates this is actually ${correct.label.toLowerCase()}.`;
+  } else if (missingEl) {
+    // Wavenumber out of range AND missing element
+    text = `${wrong.label} typically appears at ${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9, which doesn\u2019t match ${wn} cm\u207B\u00B9. Additionally, this compound\u2019s formula (${formula}) contains no ${missingEl}.`;
   } else {
-    text += `, which is close but doesn't match ${wn} cm\u207B\u00B9`;
+    // Wavenumber simply out of range
+    text = `${wrong.label} typically appears at ${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9, which doesn\u2019t match the observed ${wn} cm\u207B\u00B9.`;
   }
 
-  text += `. The correct answer is ${correct.label.toLowerCase()} (${correct.range[0]}\u2013${correct.range[1]} cm\u207B\u00B9).`;
+  text += ` The correct answer is ${correct.label.toLowerCase()} (${correct.range[0]}\u2013${correct.range[1]} cm\u207B\u00B9).`;
   if (correct.notes) text += ' ' + correct.notes;
   return text;
 }
