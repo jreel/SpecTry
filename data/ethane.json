@@ -3616,12 +3616,12 @@
       "x": {
         "assignment": "C-H bend (scissor) (alkyl, methyl or methylene)",
         "wavenumber": 1471,
-        "intensity": "strong"
+        "intensity": "weak"
       },
       "w": {
         "assignment": "C-C stretch (alkyl)",
         "wavenumber": 835,
-        "intensity": "strong"
+        "intensity": "weak"
       }
     }
   }
