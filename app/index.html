@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpecTry: Spectroscopy Practice</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">SpecTry <span>Spectroscopy Practice</span></div>
+  <div class="header-controls">
+    <div class="control-group">
+      <label for="difficulty-select">Difficulty:</label>
+      <select id="difficulty-select">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <div class="score-display">
+      Score: <strong><span id="score-correct">0</span></strong>/<span id="score-total">0</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="spectrum-container"></div>
+
+  <div id="loading">Loading question...</div>
+
+  <div id="question-panel">
+    <p id="question-text"></p>
+    <div id="choices-container"></div>
+    <div id="feedback-container" class="feedback hidden"></div>
+    <button id="next-btn" class="hidden">Next Question &rarr;</button>
+  </div>
+</main>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
