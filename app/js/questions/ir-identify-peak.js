@@ -135,15 +135,28 @@ function getMissingElement(distractor, formula) {
   return null;
 }
 
+// Signals above this wavenumber are always question-worthy.
+// Below it (fingerprint region), only C-O, C-X, and aromatic stretches are fair game.
+const FINGERPRINT_BOUNDARY = 1500;
+const FINGERPRINT_ALLOWED = new Set(['alcohol', 'ester', 'acid', 'ether', 'halide', 'aromatic']);
+
+/** Check if a signal is suitable for a question. */
+function isQuestionWorthy(signal) {
+  if (!signal.assignment) return false;
+  if (!signal.assignment.toLowerCase().includes('stretch')) return false;
+  const cat = inferCategory(signal.assignment);
+  if (!cat) return false;
+  if (signal.wavenumber < FINGERPRINT_BOUNDARY && !FINGERPRINT_ALLOWED.has(cat)) return false;
+  return true;
+}
+
 // --- Public API ---
 
 /** Check if a compound can produce this question type. */
 export function canGenerate(compound) {
   const ir = compound.IR;
   if (!ir?.curve?.length || !ir?.signal_labels) return false;
-  return Object.values(ir.signal_labels).some(s =>
-    s.assignment?.toLowerCase().includes('stretch') && inferCategory(s.assignment)
-  );
+  return Object.values(ir.signal_labels).some(s => isQuestionWorthy(s));
 }
 
 /** Generate a question. Correct answer = JSON assignment text. */
@@ -155,10 +168,7 @@ export function generate(compound, difficulty = 'medium') {
   if (labels.length === 0) return null;
 
   for (const [key, signal] of shuffle(labels)) {
-    if (!signal.assignment) continue;
-
-    // v1: only stretching vibrations
-    if (!signal.assignment.toLowerCase().includes('stretch')) continue;
+    if (!isQuestionWorthy(signal)) continue;
 
     const category = inferCategory(signal.assignment);
     if (!category) continue;
