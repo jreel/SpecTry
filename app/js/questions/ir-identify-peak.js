@@ -1,88 +1,81 @@
 // Question Type: IR Identify Peak (#9a)
 // "What functional group is responsible for the absorption near X cm⁻¹?"
+//
+// DESIGN: The correct answer comes directly from the compound JSON's
+// assignment text. The DISTRACTOR_POOL provides plausible wrong answers
+// and wavenumber range data for feedback.
 
-// Curated diagnostic absorptions for CHM 251.
-// Each entry represents a key absorption students should recognize.
-const DIAGNOSTIC_ABSORPTIONS = [
-  // --- High-frequency stretch region (>3000) ---
-  { id: 'oh_alcohol', label: 'Alcohol O\u2013H stretch', cat: 'alcohol',
-    range: [3200, 3550], center: 3375,
-    keywords: ['alcohol', 'phenol'], vibKw: ['o-h', 'o\u2013h'] },
-  { id: 'oh_acid', label: 'Carboxylic acid O\u2013H stretch', cat: 'acid',
-    range: [2500, 3300], center: 2900,
-    keywords: ['carboxylic', 'acid'], vibKw: ['o-h', 'o\u2013h'] },
-  { id: 'nh_amine', label: 'Amine N\u2013H stretch', cat: 'amine',
-    range: [3300, 3500], center: 3400,
-    keywords: ['amine'], vibKw: ['n-h', 'n\u2013h'] },
-  { id: 'nh_amide', label: 'Amide N\u2013H stretch', cat: 'amide',
-    range: [3180, 3500], center: 3340,
-    keywords: ['amide'], vibKw: ['n-h', 'n\u2013h'] },
-  { id: 'ch_sp', label: 'Alkyne \u2261C\u2013H stretch', cat: 'alkyne',
-    range: [3260, 3330], center: 3295,
-    keywords: ['alkyne', 'terminal'], vibKw: ['\u2261c-h'] },
-  { id: 'ch_sp2', label: 'Alkene/aromatic =C\u2013H stretch', cat: 'alkene',
-    range: [3000, 3100], center: 3050,
-    keywords: ['alkene', 'aromatic', 'vinyl', 'arene'], vibKw: ['=c-h'] },
-  { id: 'ch_sp3', label: 'Alkyl C\u2013H stretch', cat: 'alkane',
-    range: [2840, 3000], center: 2920,
-    keywords: ['alkyl', 'aliphatic', 'methyl', 'methylene', 'methine'], vibKw: ['-c-h'] },
-  { id: 'ch_aldehyde', label: 'Aldehyde C\u2013H stretch', cat: 'aldehyde',
-    range: [2700, 2830], center: 2765,
-    keywords: ['aldehyde'], vibKw: ['c-h stretch'] },
+// --- Category inference ---
+// Ordered by specificity: check "acid chloride" before "acid", etc.
+const CATEGORY_MAP = [
+  { cat: 'acid_chloride', kw: ['acid chloride', 'acyl chloride'] },
+  { cat: 'anhydride',     kw: ['anhydride'] },
+  { cat: 'acid',          kw: ['carboxylic acid', 'carboxylic'] },
+  { cat: 'amide',         kw: ['amide'] },
+  { cat: 'ester',         kw: ['ester', 'lactone'] },
+  { cat: 'aldehyde',      kw: ['aldehyde'] },
+  { cat: 'ketone',        kw: ['ketone'] },
+  { cat: 'alcohol',       kw: ['alcohol', 'phenol'] },
+  { cat: 'amine',         kw: ['amine'] },
+  { cat: 'nitrile',       kw: ['nitrile'] },
+  { cat: 'nitro',         kw: ['nitro'] },
+  { cat: 'alkyne',        kw: ['alkyne'] },
+  { cat: 'alkene',        kw: ['alkene', 'vinyl'] },
+  { cat: 'aromatic',      kw: ['aromatic', 'arene'] },
+  { cat: 'ether',         kw: ['ether'] },
+  { cat: 'alkane',        kw: ['alkane', 'alkyl', 'aliphatic', 'sp3', 'sp\u00b3'] },
+  { cat: 'halide',        kw: ['halide', 'chloro', 'bromo', 'fluoro'] },
+  { cat: 'carbonyl',      kw: ['carbonyl'] },
+];
 
-  // --- Triple bond region (2000-2500) ---
-  { id: 'cn_nitrile', label: 'Nitrile C\u2261N stretch', cat: 'nitrile',
-    range: [2200, 2260], center: 2230,
-    keywords: ['nitrile'], vibKw: ['c\u2261n', 'c-n'] },
-  { id: 'cc_alkyne', label: 'Alkyne C\u2261C stretch', cat: 'alkyne',
-    range: [2100, 2260], center: 2150,
-    keywords: ['alkyne'], vibKw: ['c\u2261c', 'c-c'] },
+// When the correct category is generic, also exclude its specific subtypes
+// from distractors (e.g., "C=O stretch (carbonyl)" should not have
+// "C=O stretch (ester)" as a distractor).
+const RELATED_CATEGORIES = {
+  carbonyl: ['ester', 'ketone', 'aldehyde', 'acid', 'amide', 'acid_chloride', 'anhydride'],
+};
 
-  // --- Carbonyl / double bond region (1600-1850) ---
-  { id: 'co_acid_chloride', label: 'Acid chloride C=O stretch', cat: 'acid_chloride',
-    range: [1770, 1815], center: 1800,
-    keywords: ['acid chloride', 'acyl chloride'], vibKw: ['c=o'] },
-  { id: 'co_anhydride', label: 'Anhydride C=O stretch', cat: 'anhydride',
-    range: [1800, 1850], center: 1820,
-    keywords: ['anhydride'], vibKw: ['c=o'] },
-  { id: 'co_ester', label: 'Ester C=O stretch', cat: 'ester',
-    range: [1735, 1750], center: 1742,
-    keywords: ['ester', 'lactone'], vibKw: ['c=o'] },
-  { id: 'co_aldehyde', label: 'Aldehyde C=O stretch', cat: 'aldehyde',
-    range: [1720, 1740], center: 1730,
-    keywords: ['aldehyde'], vibKw: ['c=o'] },
-  { id: 'co_acid', label: 'Carboxylic acid C=O stretch', cat: 'acid',
-    range: [1700, 1725], center: 1712,
-    keywords: ['carboxylic', 'acid'], vibKw: ['c=o'] },
-  { id: 'co_ketone', label: 'Ketone C=O stretch', cat: 'ketone',
-    range: [1705, 1725], center: 1715,
-    keywords: ['ketone'], vibKw: ['c=o'] },
-  { id: 'co_amide', label: 'Amide C=O stretch (Amide I)', cat: 'amide',
-    range: [1630, 1690], center: 1660,
-    keywords: ['amide'], vibKw: ['c=o'] },
-  { id: 'cc_alkene', label: 'Alkene C=C stretch', cat: 'alkene',
-    range: [1630, 1680], center: 1655,
-    keywords: ['alkene'], vibKw: ['c=c'] },
-  { id: 'cc_aromatic', label: 'Aromatic C=C stretch', cat: 'aromatic',
-    range: [1450, 1625], center: 1537,
-    keywords: ['aromatic', 'arene', 'ring'], vibKw: ['c=c'] },
-  { id: 'no_nitro', label: 'Nitro N=O stretch (asym.)', cat: 'nitro',
-    range: [1515, 1560], center: 1537,
-    keywords: ['nitro'], vibKw: ['n=o', 'n-o'] },
+function inferCategory(assignment) {
+  const text = assignment.toLowerCase();
+  for (const { cat, kw } of CATEGORY_MAP) {
+    if (kw.some(k => text.includes(k))) return cat;
+  }
+  return null;
+}
 
-  // --- Fingerprint region ---
-  { id: 'co_ester_low', label: 'Ester C\u2013O stretch', cat: 'ester',
-    range: [1150, 1300], center: 1225,
-    keywords: ['ester'], vibKw: ['c-o stretch', 'c\u2013o'] },
-  { id: 'co_alcohol_low', label: 'Alcohol C\u2013O stretch', cat: 'alcohol',
-    range: [1000, 1150], center: 1075,
-    keywords: ['alcohol'], vibKw: ['c-o stretch', 'c\u2013o'] },
-  { id: 'coc_ether', label: 'Ether C\u2013O\u2013C stretch', cat: 'ether',
-    range: [1050, 1150], center: 1100,
-    keywords: ['ether'], vibKw: ['c-o-c', 'c\u2013o'] },
-  { id: 'cx_halide', label: 'Alkyl halide C\u2013X stretch', cat: 'halide',
-    range: [500, 850], center: 675,
-    keywords: ['halide', 'chloro', 'bromo', 'fluoro', 'c-cl', 'c-br', 'c-f'], vibKw: ['c-x', 'stretch'] },
+// --- Distractor pool ---
+// Labels formatted in the same style as JSON assignments so MC choices
+// look consistent. Range data is used for feedback.
+const DISTRACTOR_POOL = [
+  // High-frequency stretch region
+  { label: 'O-H stretch (alcohol)',            cat: 'alcohol',       range: [3200, 3550], center: 3375 },
+  { label: 'O-H stretch (carboxylic acid)',    cat: 'acid',          range: [2500, 3300], center: 2900 },
+  { label: 'N-H stretch (amine)',              cat: 'amine',         range: [3300, 3500], center: 3400 },
+  { label: 'N-H stretch (amide)',              cat: 'amide',         range: [3180, 3500], center: 3340 },
+  { label: '\u2261C-H stretch (alkyne)',       cat: 'alkyne',        range: [3260, 3330], center: 3295 },
+  { label: '=C-H stretch (alkene/aromatic)',   cat: 'alkene',        range: [3000, 3100], center: 3050 },
+  { label: 'C-H stretch (alkyl)',              cat: 'alkane',        range: [2840, 3000], center: 2920 },
+  { label: 'C-H stretch (aldehyde)',           cat: 'aldehyde',      range: [2700, 2830], center: 2765 },
+  // Triple bond region
+  { label: 'C\u2261N stretch (nitrile)',       cat: 'nitrile',       range: [2200, 2260], center: 2230 },
+  { label: 'C\u2261C stretch (alkyne)',        cat: 'alkyne',        range: [2100, 2260], center: 2150 },
+  // Carbonyl / double bond region
+  { label: 'C=O stretch (acid chloride)',      cat: 'acid_chloride', range: [1770, 1815], center: 1800 },
+  { label: 'C=O stretch (anhydride)',          cat: 'anhydride',     range: [1800, 1850], center: 1820 },
+  { label: 'C=O stretch (ester)',              cat: 'ester',         range: [1735, 1750], center: 1742 },
+  { label: 'C=O stretch (aldehyde)',           cat: 'aldehyde',      range: [1720, 1740], center: 1730 },
+  { label: 'C=O stretch (carboxylic acid)',    cat: 'acid',          range: [1700, 1725], center: 1712 },
+  { label: 'C=O stretch (ketone)',             cat: 'ketone',        range: [1705, 1725], center: 1715 },
+  { label: 'C=O stretch (amide)',              cat: 'amide',         range: [1630, 1690], center: 1660 },
+  { label: 'C=C stretch (alkene)',             cat: 'alkene',        range: [1630, 1680], center: 1655 },
+  { label: 'C=C stretch (aromatic)',           cat: 'aromatic',      range: [1450, 1625], center: 1537 },
+  { label: 'N=O stretch (nitro, asym.)',       cat: 'nitro',         range: [1515, 1560], center: 1537 },
+  // Fingerprint region
+  { label: 'C-O stretch (ester)',              cat: 'ester',         range: [1150, 1300], center: 1225 },
+  { label: 'C-O stretch (carboxylic acid)',    cat: 'acid',          range: [1200, 1315], center: 1260 },
+  { label: 'C-O stretch (alcohol)',            cat: 'alcohol',       range: [1000, 1150], center: 1075 },
+  { label: 'C-O-C stretch (ether)',            cat: 'ether',         range: [1050, 1150], center: 1100 },
+  { label: 'C-X stretch (alkyl halide)',       cat: 'halide',        range: [500, 850],   center: 675 },
 ];
 
 function shuffle(arr) {
@@ -94,68 +87,23 @@ function shuffle(arr) {
   return a;
 }
 
-/** Match a compound's IR signal_label to the best diagnostic absorption. */
-function matchSignal(signal) {
-  const wn = signal.wavenumber;
-  const text = (signal.assignment || '').toLowerCase();
-
-  let best = null, bestScore = 0;
-
-  for (const abs of DIAGNOSTIC_ABSORPTIONS) {
-    let score = 0;
-
-    // Wavenumber in range
-    if (wn >= abs.range[0] && wn <= abs.range[1]) score += 10;
-    else if (wn >= abs.range[0] - 50 && wn <= abs.range[1] + 50) score += 2;
-    else continue; // too far, skip
-
-    // Category keyword match (strongest signal)
-    for (const kw of abs.keywords) {
-      if (text.includes(kw)) { score += 8; break; }
-    }
-    // Vibration keyword match
-    for (const kw of abs.vibKw) {
-      if (text.includes(kw)) { score += 3; break; }
-    }
-
-    if (score > bestScore) { bestScore = score; best = abs; }
-  }
-
-  return bestScore >= 13 ? best : null; // require wavenumber + at least one keyword match
-}
-
-/** Generate distractor choices based on difficulty. */
-function generateDistractors(correct, difficulty, count = 3) {
-  // Exclude same-id AND same-cat to avoid near-duplicate choices
-  const candidates = DIAGNOSTIC_ABSORPTIONS.filter(
-    a => a.id !== correct.id && a.cat !== correct.cat
-  );
-
-  candidates.forEach(c => {
-    c._dist = Math.abs(c.center - correct.center);
-  });
+/** Generate distractor choices by difficulty, excluding the correct category. */
+function generateDistractors(correctCat, wavenumber, difficulty, count = 3) {
+  const related = RELATED_CATEGORIES[correctCat] || [];
+  const excludeCats = new Set([correctCat, ...related]);
+  const candidates = DISTRACTOR_POOL.filter(d => !excludeCats.has(d.cat));
+  candidates.forEach(c => { c._dist = Math.abs(c.center - wavenumber); });
 
   let pool;
   if (difficulty === 'easy') {
     pool = candidates.filter(c => c._dist > 400);
   } else if (difficulty === 'hard') {
     pool = candidates.filter(c => c._dist < 350);
-    // Hard mode: allow same-cat if there aren't enough cross-cat options
-    if (pool.length < count) {
-      const sameCat = DIAGNOSTIC_ABSORPTIONS.filter(
-        a => a.id !== correct.id && a.cat === correct.cat
-      );
-      pool = [...pool, ...sameCat];
-    }
   } else {
-    // Medium: 1 close + 2 far
     const close = candidates.filter(c => c._dist < 350);
     const far = candidates.filter(c => c._dist > 400);
     if (close.length >= 1 && far.length >= 2) {
-      return [
-        shuffle(close)[0],
-        ...shuffle(far).slice(0, 2)
-      ];
+      return [shuffle(close)[0], ...shuffle(far).slice(0, 2)];
     }
     pool = candidates;
   }
@@ -164,15 +112,41 @@ function generateDistractors(correct, difficulty, count = 3) {
   return shuffle(pool).slice(0, count);
 }
 
+/** Find a DISTRACTOR_POOL entry matching category + wavenumber (for feedback ranges). */
+function findPoolEntry(category, wavenumber) {
+  const matches = DISTRACTOR_POOL.filter(d =>
+    d.cat === category && wavenumber >= d.range[0] - 50 && wavenumber <= d.range[1] + 50
+  );
+  if (matches.length === 0) return null;
+  return matches.find(d => wavenumber >= d.range[0] && wavenumber <= d.range[1]) || matches[0];
+}
+
+/** Check for structural elements missing from the compound's formula. */
+function getMissingElement(distractor, formula) {
+  if (!formula) return null;
+  const cat = distractor.cat;
+  if (['amine', 'amide', 'nitrile', 'nitro'].includes(cat) && !formula.includes('N'))
+    return 'nitrogen';
+  if (['alcohol', 'ester', 'acid', 'ketone', 'aldehyde', 'ether',
+       'anhydride', 'acid_chloride', 'amide', 'carbonyl'].includes(cat) && !formula.includes('O'))
+    return 'oxygen';
+  if ((cat === 'halide' || cat === 'acid_chloride') && !/Cl|Br|F[^e]|I/.test(formula))
+    return 'halogens';
+  return null;
+}
+
+// --- Public API ---
+
 /** Check if a compound can produce this question type. */
 export function canGenerate(compound) {
   const ir = compound.IR;
   if (!ir?.curve?.length || !ir?.signal_labels) return false;
-  const labels = Object.values(ir.signal_labels);
-  return labels.some(s => matchSignal(s) !== null);
+  return Object.values(ir.signal_labels).some(s =>
+    s.assignment?.toLowerCase().includes('stretch') && inferCategory(s.assignment)
+  );
 }
 
-/** Generate a question for the given compound and difficulty. */
+/** Generate a question. Correct answer = JSON assignment text. */
 export function generate(compound, difficulty = 'medium') {
   const ir = compound.IR;
   if (!ir?.curve?.length || !ir?.signal_labels) return null;
@@ -180,17 +154,25 @@ export function generate(compound, difficulty = 'medium') {
   const labels = Object.entries(ir.signal_labels);
   if (labels.length === 0) return null;
 
-  const shuffled = shuffle(labels);
+  for (const [key, signal] of shuffle(labels)) {
+    if (!signal.assignment) continue;
 
-  for (const [key, signal] of shuffled) {
-    const match = matchSignal(signal);
-    if (!match) continue;
+    // v1: only stretching vibrations
+    if (!signal.assignment.toLowerCase().includes('stretch')) continue;
 
-    const distractors = generateDistractors(match, difficulty);
+    const category = inferCategory(signal.assignment);
+    if (!category) continue;
+
+    const distractors = generateDistractors(category, signal.wavenumber, difficulty);
     if (distractors.length < 3) continue;
 
+    // Correct answer uses JSON assignment text directly
+    const poolEntry = findPoolEntry(category, signal.wavenumber);
+    const correctAbsorption = poolEntry
+      || { label: signal.assignment, cat: category, range: null, center: signal.wavenumber };
+
     const choices = [
-      { text: match.label, correct: true, absorption: match },
+      { text: signal.assignment, correct: true, absorption: correctAbsorption },
       ...distractors.slice(0, 3).map(d => ({
         text: d.label, correct: false, absorption: d
       }))
@@ -208,7 +190,7 @@ export function generate(compound, difficulty = 'medium') {
       compound,
       prompt: `What functional group is responsible for the ${intensityText}absorption near ${signal.wavenumber} cm\u207B\u00B9?`,
       targetSignal: { key, ...signal },
-      correctAbsorption: match,
+      correctAbsorption,
       choices: shuffledChoices,
       difficulty,
       highlightWavenumber: signal.wavenumber,
@@ -218,63 +200,42 @@ export function generate(compound, difficulty = 'medium') {
   return null;
 }
 
-/**
- * Check which required element is missing from a compound's formula
- * for a given diagnostic absorption category.
- * Returns a human-readable element name, or null if all required elements are present.
- */
-function getMissingElement(absorption, formula) {
-  if (!formula) return null;
-  const cat = absorption.cat;
-  // Nitrogen-containing groups
-  if (['amine', 'amide', 'nitrile', 'nitro'].includes(cat) && !formula.includes('N')) {
-    return 'nitrogen';
-  }
-  // Oxygen-containing groups (amide needs both N and O; N checked above)
-  if (['alcohol', 'ester', 'acid', 'ketone', 'aldehyde', 'ether',
-       'anhydride', 'acid_chloride', 'amide', 'carbonyl'].includes(cat) && !formula.includes('O')) {
-    return 'oxygen';
-  }
-  // Halogen-containing groups
-  if ((cat === 'halide' || cat === 'acid_chloride') && !/Cl|Br|F[^e]|I/.test(formula)) {
-    return 'halogens';
-  }
-  return null;
-}
-
-/** Generate feedback text explaining why the answer is right or wrong. */
+/** Generate feedback text. */
 export function explain(question, selectedChoice) {
-  const correct = question.correctAbsorption;
   const wn = question.targetSignal.wavenumber;
+  const correctText = question.targetSignal.assignment;
+  const correctRange = question.correctAbsorption.range;
   const formula = question.compound.formula || '';
 
   if (selectedChoice.correct) {
-    let text = `The absorption at ${wn} cm\u207B\u00B9 falls within the expected range for ${correct.label.toLowerCase()} (${correct.range[0]}\u2013${correct.range[1]} cm\u207B\u00B9).`;
-    if (correct.notes) text += ' ' + correct.notes;
+    let text = `The absorption at ${wn} cm\u207B\u00B9 is ${correctText.toLowerCase()}`;
+    if (correctRange) text += ` (typically ${correctRange[0]}\u2013${correctRange[1]} cm\u207B\u00B9)`;
+    text += '.';
+    if (question.correctAbsorption.notes) text += ' ' + question.correctAbsorption.notes;
     return text;
   }
 
   const wrong = selectedChoice.absorption;
-  const wnInWrongRange = wn >= wrong.range[0] && wn <= wrong.range[1];
+  const wrongRange = wrong.range;
+  const wnInWrongRange = wrongRange && wn >= wrongRange[0] && wn <= wrongRange[1];
   const missingEl = getMissingElement(wrong, formula);
 
   let text;
-
   if (wnInWrongRange && missingEl) {
-    // Wavenumber overlaps but compound lacks required element
-    text = `While ${wn} cm\u207B\u00B9 does fall within the range for ${wrong.label.toLowerCase()} (${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9), this compound\u2019s molecular formula (${formula}) contains no ${missingEl}, ruling out that assignment.`;
+    text = `While ${wn} cm\u207B\u00B9 does fall within the range for ${wrong.label} (${wrongRange[0]}\u2013${wrongRange[1]} cm\u207B\u00B9), this compound\u2019s molecular formula (${formula}) contains no ${missingEl}, ruling out that assignment.`;
   } else if (wnInWrongRange) {
-    // Wavenumber overlaps and elements are present; use compound context
-    text = `While ${wn} cm\u207B\u00B9 does fall within the range for ${wrong.label.toLowerCase()} (${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9), the compound\u2019s structure indicates this is actually ${correct.label.toLowerCase()}.`;
-  } else if (missingEl) {
-    // Wavenumber out of range AND missing element
-    text = `${wrong.label} typically appears at ${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9, which doesn\u2019t match ${wn} cm\u207B\u00B9. Additionally, this compound\u2019s formula (${formula}) contains no ${missingEl}.`;
+    text = `While ${wn} cm\u207B\u00B9 does fall within the range for ${wrong.label} (${wrongRange[0]}\u2013${wrongRange[1]} cm\u207B\u00B9), the compound\u2019s structure indicates this is ${correctText.toLowerCase()}.`;
+  } else if (wrongRange && missingEl) {
+    text = `${wrong.label} typically appears at ${wrongRange[0]}\u2013${wrongRange[1]} cm\u207B\u00B9, which doesn\u2019t match ${wn} cm\u207B\u00B9. Additionally, this compound\u2019s formula (${formula}) contains no ${missingEl}.`;
+  } else if (wrongRange) {
+    text = `${wrong.label} typically appears at ${wrongRange[0]}\u2013${wrongRange[1]} cm\u207B\u00B9, which doesn\u2019t match the observed ${wn} cm\u207B\u00B9.`;
   } else {
-    // Wavenumber simply out of range
-    text = `${wrong.label} typically appears at ${wrong.range[0]}\u2013${wrong.range[1]} cm\u207B\u00B9, which doesn\u2019t match the observed ${wn} cm\u207B\u00B9.`;
+    text = `The observed absorption doesn\u2019t match ${selectedChoice.text}.`;
   }
 
-  text += ` The correct answer is ${correct.label.toLowerCase()} (${correct.range[0]}\u2013${correct.range[1]} cm\u207B\u00B9).`;
-  if (correct.notes) text += ' ' + correct.notes;
+  text += ` The correct answer is ${correctText.toLowerCase()}`;
+  if (correctRange) text += ` (${correctRange[0]}\u2013${correctRange[1]} cm\u207B\u00B9)`;
+  text += '.';
+  if (question.correctAbsorption.notes) text += ' ' + question.correctAbsorption.notes;
   return text;
 }
