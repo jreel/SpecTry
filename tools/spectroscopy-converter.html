@@ -747,65 +747,6 @@ body.ir-sidebar-open footer {
 
 .ir-ref-close:hover { color: var(--error); }
 
-.ir-ref-filters {
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--rule);
-  flex-shrink: 0;
-}
-
-.ir-ref-filter-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.15rem 0.5rem;
-}
-
-.ir-ref-filter-grid label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.68rem;
-  font-weight: normal;
-  color: var(--ink);
-  cursor: pointer;
-  white-space: nowrap;
-  margin-bottom: 0;
-}
-
-.ir-ref-filter-grid input[type="checkbox"] {
-  width: auto;
-  margin: 0;
-  accent-color: var(--accent);
-}
-
-.ir-ref-filter-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-top: 0.35rem;
-  padding-top: 0.3rem;
-  border-top: 1px solid #eee;
-}
-
-.ir-ref-filter-actions button {
-  font-size: 0.65rem;
-  color: var(--accent);
-  cursor: pointer;
-  text-decoration: underline;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-}
-
-.ir-ref-filter-actions button:hover { color: var(--ink); }
-
-.ir-ref-count {
-  font-size: 0.63rem;
-  color: var(--muted);
-  font-style: italic;
-  margin-left: auto;
-}
-
 .ir-ref-table-wrap {
   flex: 1;
   overflow-y: auto;
@@ -1118,17 +1059,8 @@ Or paste tab-separated wavenumber + %transmittance manually:
 <!-- IR Reference Sidebar (full-height right panel) -->
 <aside class="ir-ref-sidebar" id="ir-ref-sidebar">
   <div class="ir-ref-sidebar-header">
-    <h3>IR Vibration Reference (Pavia)</h3>
+    <h3>IR Vibration Reference</h3>
     <button class="ir-ref-close" id="ir-ref-close" type="button" title="Close">×</button>
-  </div>
-  <div class="ir-ref-filters">
-    <div class="ir-ref-filter-grid" id="ir-ref-filters">
-      <!-- populated by JS -->
-    </div>
-    <div class="ir-ref-filter-actions">
-      <button type="button" id="ir-ref-clear-filters">Clear all</button>
-      <span class="ir-ref-count" id="ir-ref-count"></span>
-    </div>
   </div>
   <div class="ir-ref-table-wrap">
     <table class="ir-ref-table">
@@ -1882,53 +1814,28 @@ function classifyIRIntensity(T) {
 // Auto-population picks the lowest-specificity match for a wavenumber.
 // The combobox dropdown shows ALL matches sorted most-specific-first.
 
-const IR_REF_CATEGORIES = [
-  { id: 'alkyl',         label: 'Alkyl (sp³ C-H)' },
-  { id: 'alkene',        label: 'Alkene' },
-  { id: 'alkyne',        label: 'Alkyne' },
-  { id: 'aromatic',      label: 'Aromatic' },
-  { id: 'alcohol',       label: 'Alcohol / Phenol' },
-  { id: 'ether',         label: 'Ether / Epoxide' },
-  { id: 'aldehyde',      label: 'Aldehyde' },
-  { id: 'ketone',        label: 'Ketone' },
-  { id: 'carboxylic_acid', label: 'Carboxylic Acid' },
-  { id: 'ester',         label: 'Ester / Lactone' },
-  { id: 'anhydride',     label: 'Anhydride' },
-  { id: 'acid_chloride', label: 'Acid Chloride' },
-  { id: 'amine',         label: 'Amine' },
-  { id: 'amide',         label: 'Amide / Imide' },
-  { id: 'nitrile',       label: 'Nitrile / Imine' },
-  { id: 'nitro',         label: 'Nitro' },
-  { id: 'halide',        label: 'Halide (C-X)', matches: ['fluoride','chloride','bromide','iodide'] },
-  { id: 'X=C=Y',         label: 'Cumulated (X=C=Y)' },
-  { id: 'sulfur',        label: 'Sulfur' },
-  { id: 'phosphorus',    label: 'Phosphorus' },
-];
+// IR_REFERENCE_TABLE and buildIRLabel are loaded from ir-reference-table.js
 
-// IR_REFERENCE_TABLE and _hasHalogen are loaded from ir-reference-table.js
-
-
-// Return ALL matching entries from IR_REFERENCE_TABLE for a given wavenumber,
-// sorted by specificity descending (most specific first). Gated by compound
-// context (elements + IHD). Used to populate the combobox dropdown.
+// Return ALL matching entries from IR_REFERENCE_TABLE for a given wavenumber.
+// Used to populate the combobox dropdown.
 function lookupAllIRMatches(wavenumber, context) {
   const matches = [];
   for (const entry of IR_REFERENCE_TABLE) {
     if (wavenumber < entry.range[0] || wavenumber > entry.range[1]) continue;
-    if (entry.requires && !entry.requires(context)) continue;
     matches.push(entry);
   }
-  matches.sort((a, b) => b.level - a.level);
+  // Sort by range narrowness (most specific first)
+  matches.sort((a, b) => (a.range[1] - a.range[0]) - (b.range[1] - b.range[0]));
   return matches;
 }
 
-// Auto-suggestion: pick the LOWEST specificity match (most general) from the
-// full reference table. This is what auto-populates the text field; the user
+// Auto-suggestion: pick the broadest-range match (most general) from the
+// reference table. This is what auto-populates the text field; the user
 // can then pick a more specific option from the combobox dropdown.
 function suggestIRDescription(wavenumber, context) {
   const matches = lookupAllIRMatches(wavenumber, context);
   if (matches.length === 0) return '';
-  // Matches are sorted specificity desc; last one is most general
+  // Matches are sorted narrowest-first; last one is broadest (most general)
   return buildIRLabel(matches[matches.length - 1]);
 }
 
@@ -1991,14 +1898,15 @@ function initIRCombobox(row) {
         ? `~${Math.round((entry.range[0] + entry.range[1]) / 2)}`
         : `${entry.range[0]}\u2013${entry.range[1]}`;
 
+      const label = buildIRLabel(entry);
       opt.innerHTML = `
-        <span class="combo-label">${escapeHtml(buildIRLabel(entry))}</span>
+        <span class="combo-label">${escapeHtml(label)}</span>
         <span class="combo-meta">${rangeStr} cm⁻¹</span>
         <span class="combo-tag">${entry.intensity || '?'}</span>
       `;
       opt.addEventListener('mousedown', (e) => {
         e.preventDefault(); // don't blur the input
-        input.value = buildIRLabel(entry);
+        input.value = label;
         closeDropdown();
         input.dispatchEvent(new Event('input', { bubbles: true }));
       });
@@ -2114,9 +2022,7 @@ function initIRReferenceSidebar() {
   const sidebar = document.getElementById('ir-ref-sidebar');
   const toggleBtn = document.getElementById('ir-ref-toggle');
   const closeBtn = document.getElementById('ir-ref-close');
-  const filtersDiv = document.getElementById('ir-ref-filters');
   const tbody = document.getElementById('ir-ref-tbody');
-  const countDiv = document.getElementById('ir-ref-count');
 
   // Toggle open/close
   function openSidebar() {
@@ -2134,73 +2040,28 @@ function initIRReferenceSidebar() {
   });
   closeBtn.addEventListener('click', closeSidebar);
 
-  // Build filter checkboxes (2-column grid)
-  let filterHtml = '';
-  IR_REF_CATEGORIES.forEach(cat => {
-    filterHtml += `<label><input type="checkbox" data-cat="${cat.id}"> ${cat.label}</label>`;
-  });
-  filtersDiv.innerHTML = filterHtml;
-
   // Build the table rows
   IR_REFERENCE_TABLE.forEach((entry, idx) => {
     const tr = document.createElement('tr');
-    tr.dataset.tags = JSON.stringify(entry.filter_tags);
     tr.dataset.idx = idx;
 
     const rangeStr = entry.range[1] - entry.range[0] <= 10
       ? `~${Math.round((entry.range[0] + entry.range[1]) / 2)}`
       : `${entry.range[0]}\u2013${entry.range[1]}`;
 
+    let assignHtml = escapeHtml(entry.assignment);
+    if (entry.notes) {
+      assignHtml += `<br><span style="font-size:0.85em;color:#887a6a;font-style:italic">${escapeHtml(entry.notes)}</span>`;
+    }
+
     tr.innerHTML = `
       <td>${escapeHtml(entry.bond)}</td>
-      <td>${escapeHtml(entry.assignment_specific)}</td>
+      <td>${assignHtml}</td>
       <td>${escapeHtml(entry.mode)}</td>
       <td>${rangeStr}</td>
       <td>${entry.intensity || ''}</td>
     `;
     tbody.appendChild(tr);
-  });
-
-  // Expand a checked category ID into the set of filter_tags it should match.
-  // Most categories match their own ID; 'halide' expands to individual halide tags.
-  function expandCategoryToTags(catId) {
-    const cat = IR_REF_CATEGORIES.find(c => c.id === catId);
-    return (cat && cat.matches) ? cat.matches : [catId];
-  }
-
-  function applyFilters() {
-    const checked = [...filtersDiv.querySelectorAll('input[type="checkbox"]:checked')]
-      .map(cb => cb.dataset.cat);
-    const rows = tbody.querySelectorAll('tr');
-    let visible = 0;
-
-    if (checked.length === 0) {
-      rows.forEach(r => { r.classList.remove('ref-hidden'); visible++; });
-    } else {
-      // Build a flat set of all tags that should match
-      const matchTags = new Set();
-      checked.forEach(catId => expandCategoryToTags(catId).forEach(t => matchTags.add(t)));
-
-      rows.forEach(r => {
-        const rowTags = JSON.parse(r.dataset.tags);
-        if (rowTags.some(t => matchTags.has(t))) {
-          r.classList.remove('ref-hidden');
-          visible++;
-        } else {
-          r.classList.add('ref-hidden');
-        }
-      });
-    }
-
-    countDiv.textContent = checked.length === 0
-      ? `All ${rows.length} entries`
-      : `${visible} of ${rows.length}`;
-  }
-
-  filtersDiv.addEventListener('change', applyFilters);
-  document.getElementById('ir-ref-clear-filters').addEventListener('click', () => {
-    filtersDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    applyFilters();
   });
 
   countDiv.textContent = `All ${IR_REFERENCE_TABLE.length} entries`;
@@ -2486,11 +2347,45 @@ const IR_MODE_OPTIONS = ['stretch', 'bend', 'wag', 'scissor', 'rock', 'twist', '
 const IR_SHAPE_OPTIONS = ['', 'broad', 'very broad', 'sharp', 'doublet'];
 
 // Bond -> assignment_general (auto-populated)
+const IR_BOND_TO_GENERAL = {
+  'C=O': 'carbonyl', 'O-H': 'hydroxyl', 'N-H': 'amino',
+  '-C-H': 'sp3 C-H', 'O=C-H': 'aldehyde', '=C-H': 'sp2 C-H',
+  '\u2261C-H': 'sp C-H', 'C\u2261N': 'triple bond', 'C\u2261C': 'triple bond',
+  'C=C': 'unsaturated', 'C-O': 'C-O single bond', 'N=O': 'nitro',
+  'C-X': 'halide', 'other': ''
+};
+
+// Bond -> assignment_specific options
+const IR_BOND_TO_SPECIFIC = {
+  'C=O': ['ester', 'ketone', 'aldehyde', 'carboxylic acid', 'amide', 'acid chloride', 'anhydride'],
+  'O-H': ['alcohol', 'carboxylic acid', 'phenol'],
+  'N-H': ['amine', 'amide'],
+  '-C-H': ['methyl', 'methylene', 'methine'],
+  'O=C-H': ['aldehyde'],
+  '=C-H': ['alkene', 'aromatic'],
+  '\u2261C-H': ['terminal alkyne'],
+  'C\u2261N': ['nitrile'],
+  'C\u2261C': ['alkyne'],
+  'C=C': ['alkene', 'aromatic'],
+  'C-O': ['alcohol', 'ester', 'carboxylic acid', 'ether'],
+  'N=O': ['nitro'],
+  'C-X': ['chloride', 'bromide', 'fluoride'],
+  'other': []
+};
+
+/** Update the specific dropdown options when bond selection changes. */
+function updateIRSpecificOptions(bondSelect, specificSelect, currentVal) {
+  const bond = bondSelect.value;
+  const options = IR_BOND_TO_SPECIFIC[bond] || [];
+  specificSelect.innerHTML = '<option value="">(select)</option>' +
+    options.map(o => `<option value="${o}"${o === currentVal ? ' selected' : ''}>${o}</option>`).join('');
+  // Auto-select if only one option
+  if (options.length === 1) specificSelect.value = options[0];
+}
+
 /**
- * Parse an IR assignment display string (e.g., "C=O stretch (ester)")
+ * Parse an IR assignment display string (e.g., "C=O stretch (carbonyl)")
  * into structured fields by matching against IR_REFERENCE_TABLE.
- * With the reference table aligned to the JSON schema, this is a direct
- * field read: no heuristic remapping needed.
  */
 function parseIRAssignment(text, wavenumber) {
   if (!text) return {};
@@ -2504,12 +2399,12 @@ function parseIRAssignment(text, wavenumber) {
     match = IR_REFERENCE_TABLE.find(e => tl.includes(buildIRLabel(e).toLowerCase()));
   }
 
-  // Try wavenumber + assignment_specific keyword
+  // Try wavenumber + assignment keyword
   if (!match && wavenumber) {
     for (const e of IR_REFERENCE_TABLE) {
       if (wavenumber >= e.range[0] - 20 && wavenumber <= e.range[1] + 20) {
-        const specKey = e.assignment_specific.toLowerCase().split(',')[0].split('(')[0].trim();
-        if (specKey && tl.includes(specKey)) { match = e; break; }
+        const key = e.assignment.toLowerCase().split(',')[0].trim();
+        if (tl.includes(key)) { match = e; break; }
       }
     }
   }
@@ -2519,8 +2414,8 @@ function parseIRAssignment(text, wavenumber) {
   return {
     bond: match.bond,
     mode: match.mode,
-    assignment_general: match.assignment_general,
-    assignment_specific: match.assignment_specific,
+    assignment_general: match.assignment,
+    assignment_specific: '',
   };
 }
 
@@ -3737,7 +3632,10 @@ function loadCompoundIntoForm(compound) {
       ensureLabelHeader('ir-signal-labels', 'ir');
       const container = document.getElementById('ir-signal-labels');
       container.innerHTML = '<p class="help-mini">Loaded from file. Edit fields directly.</p>';
-      for (const [key, info] of Object.entries(compound.IR.signal_labels)) {
+      // Sort by decreasing wavenumber for easier review
+      const sortedEntries = Object.entries(compound.IR.signal_labels)
+        .sort((a, b) => (b[1].wavenumber || 0) - (a[1].wavenumber || 0));
+      for (const [key, info] of sortedEntries) {
         // Old format: has 'assignment' string. New format: has structured fields.
         const displayText = info.assignment || reconstructIRAssignment(info);
         addSignalLabelRow('ir', 'ir-signal-labels', {
