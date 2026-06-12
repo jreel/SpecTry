@@ -747,6 +747,44 @@ body.ir-sidebar-open footer {
 
 .ir-ref-close:hover { color: var(--error); }
 
+.ir-ref-sidebar-filter {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+}
+.ir-ref-sidebar-filter input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+  font: 0.75rem 'SF Mono', monospace;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper);
+}
+.ir-ref-compound-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ir-ref-compound-filter input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.ir-ref-count {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-left: auto;
+}
+
 .ir-ref-table-wrap {
   flex: 1;
   overflow-y: auto;
@@ -1061,6 +1099,11 @@ Or paste tab-separated wavenumber + %transmittance manually:
   <div class="ir-ref-sidebar-header">
     <h3>IR Vibration Reference</h3>
     <button class="ir-ref-close" id="ir-ref-close" type="button" title="Close">×</button>
+  </div>
+  <div class="ir-ref-sidebar-filter">
+    <input type="text" id="ir-ref-search" placeholder="Search (e.g. alcohol, C=O, stretch)" autocomplete="off">
+    <label class="ir-ref-compound-filter"><input type="checkbox" id="ir-ref-compound-filter"> Filter by compound</label>
+    <span class="ir-ref-count" id="ir-ref-count"></span>
   </div>
   <div class="ir-ref-table-wrap">
     <table class="ir-ref-table">
@@ -1817,11 +1860,12 @@ function classifyIRIntensity(T) {
 // IR_REFERENCE_TABLE and buildIRLabel are loaded from ir-reference-table.js
 
 // Return ALL matching entries from IR_REFERENCE_TABLE for a given wavenumber.
-// Used to populate the combobox dropdown.
+// Gated by compound context via requires(). Used to populate the combobox dropdown.
 function lookupAllIRMatches(wavenumber, context) {
   const matches = [];
   for (const entry of IR_REFERENCE_TABLE) {
     if (wavenumber < entry.range[0] || wavenumber > entry.range[1]) continue;
+    if (entry.requires && !entry.requires(context)) continue;
     matches.push(entry);
   }
   // Sort by range narrowness (most specific first)
@@ -2040,10 +2084,18 @@ function initIRReferenceSidebar() {
   });
   closeBtn.addEventListener('click', closeSidebar);
 
+  // Filter controls
+  const searchInput = document.getElementById('ir-ref-search');
+  const compoundFilterCb = document.getElementById('ir-ref-compound-filter');
+  const countDiv = document.getElementById('ir-ref-count');
+
   // Build the table rows
   IR_REFERENCE_TABLE.forEach((entry, idx) => {
     const tr = document.createElement('tr');
     tr.dataset.idx = idx;
+    // Store searchable text for filtering
+    tr.dataset.searchText = (entry.bond + ' ' + entry.mode + ' ' + entry.assignment +
+      ' ' + (entry.notes || '')).toLowerCase();
 
     const rangeStr = entry.range[1] - entry.range[0] <= 10
       ? `~${Math.round((entry.range[0] + entry.range[1]) / 2)}`
@@ -2064,7 +2116,42 @@ function initIRReferenceSidebar() {
     tbody.appendChild(tr);
   });
 
-  countDiv.textContent = `All ${IR_REFERENCE_TABLE.length} entries`;
+  function applyFilters() {
+    const query = searchInput.value.trim().toLowerCase();
+    const useCompound = compoundFilterCb.checked;
+    const context = useCompound ? getCurrentCompoundContext() : null;
+    const rows = tbody.querySelectorAll('tr');
+    let visible = 0;
+
+    rows.forEach(r => {
+      const idx = parseInt(r.dataset.idx);
+      const entry = IR_REFERENCE_TABLE[idx];
+      let show = true;
+
+      // Text search filter
+      if (query && !r.dataset.searchText.includes(query)) {
+        show = false;
+      }
+
+      // Compound filter (requires)
+      if (show && useCompound && entry.requires && context) {
+        if (!entry.requires(context)) show = false;
+      }
+
+      if (show) {
+        r.classList.remove('ref-hidden');
+        visible++;
+      } else {
+        r.classList.add('ref-hidden');
+      }
+    });
+
+    const total = rows.length;
+    countDiv.textContent = visible === total ? '' : `${visible} of ${total}`;
+  }
+
+  searchInput.addEventListener('input', applyFilters);
+  compoundFilterCb.addEventListener('change', applyFilters);
 }
 
 document.addEventListener('DOMContentLoaded', initIRReferenceSidebar);
